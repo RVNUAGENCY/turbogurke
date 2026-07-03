@@ -8,7 +8,7 @@ Offizielle Brand-Assets für **TURBOGURKE** (Twitch). Maskottchen: eine grinsend
 
 | Farbe | Hex | Verwendung |
 |---|---|---|
-| Neon-Lime (Glow) | `#B0F010` – `#C0F020` | Blitze, Glow, Akzente, Schrift |
+| Neon-Lime (Glow) | `#B0F010` – `#C0F020` | Explosionen, Glow, Akzente, Schrift |
 | Neon-Lime Hell | `#E0F040` | Highlights, Funken |
 | Gurken-Grün | `#30B000` | Maskottchen-Körper, Flächen |
 | Dunkelgrün | `#007000` | Schattierungen |
@@ -18,6 +18,10 @@ Offizielle Brand-Assets für **TURBOGURKE** (Twitch). Maskottchen: eine grinsend
 | Weiß | `#F0F0F0` | Zähne, Augen, Kontraste |
 
 **Kein Rot.** Rot (alter Blaster im Logo, Herz-Emote) wird aus der Marke entfernt und darf in neuen Designs nicht verwendet werden.
+
+**Keine Blitze mehr.** Die Blitz-Motive in den alten Assets sind Legacy — neue Designs verwenden stattdessen **Comic-Explosionen** (Cel-Shading, dicke schwarze Outlines) in Neon-Lime/Grün/Weiß.
+
+**Typografie:** Wordmark und Headlines im **GTA-Font** (Pricedown bzw. freie Alternative), nicht mehr im alten Graffiti-Font des Logos. UI-/Fließtext in einer schmalen, cleanen Sans (z. B. Barlow Condensed).
 
 ## Struktur
 
@@ -35,5 +39,8 @@ brand/
 
 ## Design-Richtung
 
-- Look & Feel: **GTA-inspiriert** (Heist/Wanted-HUD-Ästhetik), kombiniert mit dem Neon-Lime-Glow der Marke
+- Look & Feel: **GTA-inspiriert** (Heist/Wanted-HUD-Ästhetik, Pricedown-Typografie, Loading-Screen-Illustrationen), kombiniert mit dem Neon-Lime-Glow der Marke
+- Effekte: Explosionen statt Blitze
 - Geplante Ableitungen: Twitch-Stream-Overlay-Paket, danach Discord-Server-Branding
+
+Der fertige Design-Brief liegt in [`claude-design-prompt.md`](claude-design-prompt.md).
