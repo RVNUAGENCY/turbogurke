@@ -21,6 +21,8 @@ Offizielle Brand-Assets für **TURBOGURKE** (Twitch). Maskottchen: eine grinsend
 
 **Keine Blitze mehr.** Die Blitz-Motive in den alten Assets sind Legacy — neue Designs verwenden stattdessen **Comic-Explosionen** (Cel-Shading, dicke schwarze Outlines) in Neon-Lime/Grün/Weiß.
 
+**Wasserpistole statt Blaster.** Das Maskottchen hält eine Comic-Wasserpistole — ausschließlich in Markenfarben (Lime/Teal/Navy). Der alte rote Blaster bleibt verboten.
+
 **Typografie:** Wordmark und Headlines im **GTA-Font** (Pricedown bzw. freie Alternative), nicht mehr im alten Graffiti-Font des Logos. UI-/Fließtext in einer schmalen, cleanen Sans (z. B. Barlow Condensed).
 
 ## Struktur
