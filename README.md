@@ -25,6 +25,8 @@ Offizielle Brand-Assets für **TURBOGURKE** (Twitch). Maskottchen: eine grinsend
 
 **Typografie:** Wordmark und Headlines im **GTA-Font** (Pricedown bzw. freie Alternative), nicht mehr im alten Graffiti-Font des Logos. UI-/Fließtext in einer schmalen, cleanen Sans (z. B. Barlow Condensed).
 
+Fertig gerenderte Pricedown-Wordmarks (transparente PNGs) liegen in `brand/wordmark/` (Lime mit Glow, Lime, Weiß). Die Font-Datei selbst liegt **nicht** im Repo — die [Typodermic-Lizenz](https://typodermicfonts.com/pricedown/) erlaubt gerenderte Logos, aber keine Weitergabe der TTF. Font offiziell laden: https://typodermicfonts.com/pricedown/
+
 ## Struktur
 
 ```
