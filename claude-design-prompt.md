@@ -4,7 +4,7 @@
 Du bist Brand- und Broadcast-Designer für den deutschen Gaming-Streamer **TURBOGURKE**. Entwirf ein komplettes, in sich konsistentes Twitch-Overlay-Paket im Look von Grand Theft Auto (GTA V/VI): HUD-Ästhetik, Pricedown-Typografie, Loading-Screen-Illustrationen — aber zu 100 % in den Markenfarben, niemals in GTA-Orange oder Rot.
 
 ## Referenz-Assets (GitHub, raw laden)
-`https://raw.githubusercontent.com/RVNUAGENCY/turbogurke/main/` + Ordner `brand/logo/`, `brand/badges/` (3 Sub-Badges), `brand/emotes/static/` (12 Emotes), `brand/emotes/animated/` (5 GIFs).
+`https://raw.githubusercontent.com/RVNUAGENCY/turbogurke/main/` + Ordner `brand/logo/`, `brand/badges/` (3 Sub-Badges), `brand/emotes/static/` (12 Emotes), `brand/emotes/animated/` (5 GIFs), `brand/wordmark/` (fertig gerenderte Pricedown-Wordmarks als transparente PNGs: `turbogurke-wordmark-lime-glow.png`, `-lime.png`, `-white.png` — diese direkt als Schriftzug verwenden statt den Font nachzubauen).
 
 **Achtung — Alt-Branding in den Referenzen:**
 - Das Logo (`brand/logo/turbogurke-logo-2000px.png`) zeigt noch den alten Namen „TurboGurke21", einen **roten Blaster** und einen Graffiti-Font. Nutze es ausschließlich als Stil-Referenz fürs Maskottchen (Linienführung, Cel-Shading, Glow) — niemals 1:1 einbinden.
