@@ -1,0 +1,7 @@
+# Lokale Daten & generierter Output — nicht ins Repo
+*.sqlite
+*.sqlite-journal
+output/
+__pycache__/
+*.pyc
+.env

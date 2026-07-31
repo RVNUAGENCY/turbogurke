@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TURBOGURKE — LoL Performance Dashboard</title>
+<style>
+  :root {
+    --lime: #B0F010;
+    --lime-hi: #E0F040;
+    --green: #30B000;
+    --navy: #1E2F3F;
+    --teal: #1F6050;
+    --bg: #0a1119;
+    --panel: #14212e;
+    --panel-2: #1b2c3c;
+    --text: #F0F0F0;
+    --muted: #8fa3b3;
+    --bad: #ff5470;
+    --good: var(--lime);
+    --border: #26384a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Barlow Condensed", "Segoe UI", system-ui, sans-serif;
+    font-size: 16px; line-height: 1.45;
+  }
+  a { color: var(--lime); }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 80px; }
+  header.top {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 20px 24px; margin-bottom: 24px;
+    background: linear-gradient(135deg, var(--navy), #0e1a26);
+    border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: 0 0 24px rgba(176,240,16,.08);
+  }
+  .brand { font-size: 30px; font-weight: 800; letter-spacing: 1px;
+    color: var(--lime); text-shadow: 0 0 12px rgba(176,240,16,.5); }
+  .brand small { display:block; font-size:13px; color: var(--muted); letter-spacing:2px; font-weight:600; }
+  .rankbox { text-align: right; }
+  .rankbox .rank { font-size: 24px; font-weight: 800; }
+  .rankbox .lp { color: var(--lime); }
+  .rankbox .rec { color: var(--muted); font-size: 14px; }
+
+  h2 { font-size: 22px; margin: 34px 0 14px; padding-bottom: 6px;
+    border-bottom: 2px solid var(--border); color: var(--lime); letter-spacing:.5px; }
+  h2 .sub { font-size: 13px; color: var(--muted); font-weight: 400; letter-spacing:0; }
+
+  .grid { display: grid; gap: 16px; }
+  .cards { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .stat { font-size: 34px; font-weight: 800; color: var(--lime); }
+  .stat.bad { color: var(--bad); }
+  .stat-label { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+  .stat-sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* Problem cards */
+  .problem { border-left: 4px solid var(--lime); background: var(--panel-2);
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; }
+  .problem .ptitle { font-size: 18px; font-weight: 700; }
+  .problem .pimpact { float: right; font-size: 15px; font-weight: 800; color: var(--lime); }
+  .problem .pdetail { color: var(--text); margin: 6px 0; }
+  .problem .padvice { color: var(--muted); font-size: 14px; }
+  .rank-num { display:inline-block; width: 26px; height: 26px; line-height: 26px; text-align:center;
+    background: var(--lime); color: #08131c; font-weight: 800; border-radius: 6px; margin-right: 8px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: .5px; }
+  tbody tr:hover { background: rgba(176,240,16,.05); }
+  .wr-good { color: var(--lime); font-weight: 700; }
+  .wr-bad { color: var(--bad); font-weight: 700; }
+  .wr-mid { color: var(--text); font-weight: 700; }
+
+  .two-col { grid-template-columns: 1fr 1fr; }
+  .four-col { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 780px){ .two-col, .four-col { grid-template-columns: 1fr; } }
+  canvas { max-width: 100%; }
+  .chart-box { position: relative; height: 240px; }
+  .chart-box.tall { height: 300px; }
+  .dist-row { display:flex; justify-content: space-between; font-size:14px; color: var(--muted);
+    border-top: 1px dashed var(--border); padding-top:6px; margin-top:8px; }
+  .dist-row b { color: var(--text); }
+  .note { color: var(--muted); font-size: 13px; font-style: italic; }
+  footer { color: var(--muted); font-size: 13px; margin-top: 50px; text-align:center; }
+  .pill { display:inline-block; background: var(--navy); border:1px solid var(--border);
+    border-radius: 999px; padding: 2px 10px; font-size: 12px; color: var(--muted); margin: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">TURBOGURKE
+      <small>CLIMB TRACKER · D4 → MASTER · RANKED SOLO/DUO</small>
+    </div>
+    <div class="rankbox">
+      <div class="rank">{{ rank.tier_label }} <span class="lp">{{ rank.lp }} LP</span></div>
+      <div class="rec">Season {{ rank.wins }}W / {{ rank.losses }}L
+        {% if rank.season_winrate is not none %}({{ rank.season_winrate }}%){% endif %}</div>
+      <div class="rec">DB: {{ results.overall.games }} Ranked-Games analysiert</div>
+    </div>
+  </header>
+
+  {% if results.overall.games == 0 %}
+  <div class="panel"><b>Noch keine Ranked-Solo/Duo-Games in der DB.</b>
+    Starte einen Pull mit gesetztem <code>RIOT_API_KEY</code>.</div>
+  {% else %}
+
+  <!-- Top-Kennzahlen -->
+  <div class="grid cards">
+    <div class="panel">
+      <div class="stat-label">Winrate (DB)</div>
+      <div class="stat {{ 'bad' if results.overall.winrate < 50 else '' }}">{{ results.overall.winrate }}%</div>
+      <div class="stat-sub">{{ results.overall.wins }}W / {{ results.overall.losses }}L</div>
+    </div>
+    <div class="panel">
+      <div class="stat-label">Ø KDA (Main-Champs)</div>
+      <div class="stat">{{ results.champions[0].kda if results.champions else 0 }}</div>
+      <div class="stat-sub">Top-Champ: {{ results.champions[0].champion if results.champions else '—' }}</div>
+    </div>
+    <div class="panel">
+      <div class="stat-label">Deaths / Minute</div>
+      <div class="stat {{ 'bad' if results.deaths.deaths_per_min > 0.35 else '' }}">{{ results.deaths.deaths_per_min }}</div>
+      <div class="stat-sub">Ø {{ results.deaths.avg_deaths }} Tode / Game</div>
+    </div>
+    <div class="panel">
+      <div class="stat-label">Gold-Diff @10</div>
+      {% set gd = results.laning.gold_diff_10.dist %}
+      <div class="stat {{ 'bad' if gd.mean is defined and gd.mean < 0 else '' }}">{{ '%+d'|format(gd.mean|int) if gd.mean is defined else '—' }}</div>
+      <div class="stat-sub">gegen direkten Lane-Gegner</div>
+    </div>
+  </div>
+
+  <!-- Top-3 Baustellen -->
+  <h2>🔧 Deine 3 größten Baustellen <span class="sub">— priorisiert nach geschätztem LP-Impact</span></h2>
+  {% if results.problems %}
+    {% for p in results.problems %}
+    <div class="problem">
+      <span class="pimpact">≈ {{ p.lp_impact }} LP</span>
+      <div class="ptitle"><span class="rank-num">{{ loop.index }}</span>{{ p.title }}</div>
+      <div class="pdetail">{{ p.detail }}</div>
+      <div class="padvice">➜ {{ p.advice }}</div>
+    </div>
+    {% endfor %}
+    <div class="note">LP-Zahlen sind Schätzungen (~{{ results.long_tail.lp_per_net_win|round(0)|int }} LP je Netto-Sieg),
+      nur zur Priorisierung gedacht.</div>
+  {% else %}
+    <div class="panel">Zu wenig Daten für belastbare Baustellen-Erkennung. Zieh mehr Games.</div>
+  {% endif %}
+
+  <!-- Trend -->
+  <h2>📈 Trend <span class="sub">— rollierende {{ results.trend.window }}-Game-Winrate</span></h2>
+  <div class="panel"><div class="chart-box tall"><canvas id="trendChart"></canvas></div></div>
+
+  <!-- Long Tail -->
+  <h2>🎯 Long-Tail-Analyse <span class="sub">— Top-{{ results.long_tail.top.champs|length }} vs. der Rest</span></h2>
+  <div class="grid two-col">
+    <div class="panel">
+      <div class="stat-label">Top-Champs</div>
+      <div class="stat">{{ results.long_tail.top.winrate }}%</div>
+      <div class="stat-sub">{{ results.long_tail.top.wins }}W / {{ results.long_tail.top.losses }}L
+        · {{ results.long_tail.top.games }} Games</div>
+      <div class="stat-sub">{% for c in results.long_tail.top.champs %}<span class="pill">{{ c }}</span>{% endfor %}</div>
+    </div>
+    <div class="panel">
+      <div class="stat-label">Off-Champs (Rest)</div>
+      <div class="stat {{ 'bad' if results.long_tail.rest.winrate < results.long_tail.top.winrate else '' }}">{{ results.long_tail.rest.winrate }}%</div>
+      <div class="stat-sub">{{ results.long_tail.rest.wins }}W / {{ results.long_tail.rest.losses }}L
+        · {{ results.long_tail.rest.games }} Games</div>
+      <div class="stat-sub">Netto aus Off-Champs: <b>{{ '%+d'|format(results.long_tail.rest_net_lp) }} LP</b> ·
+        entgangen ggü. Top-Niveau: <b style="color:var(--bad)">≈ {{ results.long_tail.lp_left_on_table }} LP</b></div>
+    </div>
+  </div>
+
+  <!-- Rollen-Split -->
+  <h2>🧭 Rollen-Split <span class="sub">— Winrate je Position (Autofill separat)</span></h2>
+  <div class="grid two-col">
+    <div class="panel"><div class="chart-box"><canvas id="roleChart"></canvas></div></div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Rolle</th><th>Games</th><th>W-L</th><th>WR</th></tr></thead>
+        <tbody>
+        {% for r in results.roles.roles %}
+          <tr><td>{{ r.position }}</td><td>{{ r.games }}</td><td>{{ r.wins }}-{{ r.losses }}</td>
+            <td class="{{ 'wr-good' if r.winrate >= 52 else ('wr-bad' if r.winrate < 48 else 'wr-mid') }}">{{ r.winrate }}%</td></tr>
+        {% endfor %}
+        {% if results.roles.autofill.games %}
+          <tr><td>Autofill ⚠</td><td>{{ results.roles.autofill.games }}</td>
+            <td>{{ results.roles.autofill.wins }}-{{ results.roles.autofill.losses }}</td>
+            <td class="{{ 'wr-good' if results.roles.autofill.winrate >= 52 else ('wr-bad' if results.roles.autofill.winrate < 48 else 'wr-mid') }}">{{ results.roles.autofill.winrate }}%</td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Champion Breakdown -->
+  <h2>🏆 Champion-Breakdown <span class="sub">— Ranked Solo/Duo</span></h2>
+  <div class="panel">
+    <table>
+      <thead><tr><th>Champion</th><th>Games</th><th>W-L</th><th>WR</th><th>KDA</th>
+        <th>Ø K/D/A</th><th>Ø Dauer</th></tr></thead>
+      <tbody>
+      {% for c in results.champions %}
+        <tr>
+          <td>{{ c.champion }}</td>
+          <td>{{ c.games }}</td>
+          <td>{{ c.wins }}-{{ c.losses }}</td>
+          <td class="{{ 'wr-good' if c.winrate >= 52 else ('wr-bad' if c.winrate < 48 else 'wr-mid') }}">{{ c.winrate }}%</td>
+          <td>{{ c.kda }}</td>
+          <td>{{ c.kills }}/{{ c.deaths }}/{{ c.assists }}</td>
+          <td>{{ c.avg_duration_min }} min</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Laning -->
+  <h2>⚔️ Laning-Phase <span class="sub">— vs. direktem Lane-Gegner · Verteilung, nicht nur Mittelwert</span></h2>
+  <div class="grid four-col">
+    {% set metrics = [
+      ('cs10', 'CS @10', results.laning.cs10),
+      ('cs14', 'CS @14', results.laning.cs14),
+      ('gold_diff_10', 'Gold-Diff @10', results.laning.gold_diff_10),
+      ('xp_diff_10', 'XP-Diff @10', results.laning.xp_diff_10)
+    ] %}
+    {% for key, label, m in metrics %}
+    <div class="panel">
+      <div class="stat-label">{{ label }}</div>
+      {% if m.dist.count %}
+      <div class="stat {{ 'bad' if 'diff' in key and m.dist.mean < 0 else '' }}">
+        {{ '%+.0f'|format(m.dist.mean) if 'diff' in key else m.dist.mean }}</div>
+      <div class="chart-box" style="height:170px"><canvas id="hist_{{ key }}"></canvas></div>
+      <div class="dist-row"><span>Median <b>{{ m.dist.median }}</b></span>
+        <span>P25 <b>{{ m.dist.p25 }}</b></span><span>P75 <b>{{ m.dist.p75 }}</b></span></div>
+      {% else %}
+      <div class="note">Keine Timeline-Daten.</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Sessions / Tilt -->
+  <h2>🔥 Tilt-Erkennung <span class="sub">— Sessions (Lücke &gt; 2h), Winrate nach Spielposition & nach Niederlage</span></h2>
+  <div class="grid two-col">
+    <div class="panel"><div class="chart-box"><canvas id="sessionChart"></canvas></div></div>
+    <div class="panel">
+      <div class="stat-label">Winrate direkt nach einer Niederlage</div>
+      <div class="stat {{ 'bad' if results.sessions.after_loss.winrate < results.overall.winrate else '' }}">
+        {{ results.sessions.after_loss.winrate }}%</div>
+      <div class="stat-sub">{{ results.sessions.after_loss.wins }}W / {{ results.sessions.after_loss.games - results.sessions.after_loss.wins }}L
+        über {{ results.sessions.after_loss.games }} Spiele · Gesamt-WR {{ results.overall.winrate }}%</div>
+      <div class="dist-row" style="border:none;margin-top:14px">
+        {% if results.sessions.after_loss.winrate < results.overall.winrate %}
+        <span style="color:var(--bad)">⚠ Du verlierst nach Niederlagen überdurchschnittlich — klassisches Tilt-Muster.</span>
+        {% else %}
+        <span style="color:var(--lime)">✓ Kein auffälliges Tilt-Muster nach Niederlagen.</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Deaths -->
+  <h2>💀 Death-Analyse <span class="sub">— wann im Spiel du stirbst</span></h2>
+  <div class="grid two-col">
+    <div class="panel"><div class="chart-box"><canvas id="deathChart"></canvas></div></div>
+    <div class="panel">
+      <div class="stat-label">Deaths pro Minute</div>
+      <div class="stat {{ 'bad' if results.deaths.deaths_per_min > 0.35 else '' }}">{{ results.deaths.deaths_per_min }}</div>
+      <div class="stat-sub">{{ results.deaths.total_deaths }} Tode gesamt · Ø {{ results.deaths.avg_deaths }} / Game</div>
+      {% if results.deaths.timeline_deaths %}
+      <div class="stat-sub" style="margin-top:12px">Verteilung nach Phase (Timeline):</div>
+      <div class="dist-row" style="border:none">
+        {% for lbl in results.deaths.phase_labels %}
+        <span>{{ lbl }} <b>{{ results.deaths.phase_counts[loop.index0] }}</b></span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="note">Keine Timeline-Death-Daten vorhanden.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% endif %}
+
+  <footer>
+    Generiert am {{ meta.generated_at }} · Datenquelle: offizielle Riot Games API ·
+    LP-Werte sind Schätzungen · TURBOGURKE Climb Tracker v{{ meta.version }}
+  </footer>
+</div>
+
+{% if results.overall.games > 0 %}
+<script src="{{ chartjs_path }}"></script>
+<script>
+const DATA = {{ results|tojson }};
+const CSS = getComputedStyle(document.documentElement);
+const LIME = CSS.getPropertyValue('--lime').trim() || '#B0F010';
+const BAD  = CSS.getPropertyValue('--bad').trim()  || '#ff5470';
+const MUTED= CSS.getPropertyValue('--muted').trim()|| '#8fa3b3';
+const GRID = 'rgba(255,255,255,.06)';
+
+function baseOpts(extra){
+  return Object.assign({
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display:false }, tooltip:{ enabled:true } },
+    scales: {
+      x: { grid:{ color: GRID }, ticks:{ color: MUTED } },
+      y: { grid:{ color: GRID }, ticks:{ color: MUTED } }
+    }
+  }, extra||{});
+}
+function wrColor(v){ return v >= 52 ? LIME : (v < 48 ? BAD : MUTED); }
+
+if (window.Chart) {
+  Chart.defaults.color = MUTED;
+  Chart.defaults.font.family = 'Barlow Condensed, Segoe UI, sans-serif';
+
+  // Trend
+  const t = DATA.trend;
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: { labels: t.x, datasets: [
+      { label: 'Winrate %', data: t.y, borderColor: LIME, backgroundColor:'rgba(176,240,16,.12)',
+        fill:true, tension:.25, pointRadius:0, borderWidth:2 },
+      { label: '50%', data: t.x.map(()=>50), borderColor: MUTED, borderDash:[6,6],
+        pointRadius:0, borderWidth:1, fill:false }
+    ]},
+    options: baseOpts({ scales:{ x:{grid:{color:GRID},ticks:{color:MUTED}},
+      y:{ min:0, max:100, grid:{color:GRID}, ticks:{ color:MUTED, callback:v=>v+'%' } } } })
+  });
+
+  // Rollen
+  const roles = DATA.roles.roles;
+  new Chart(document.getElementById('roleChart'), {
+    type:'bar',
+    data:{ labels: roles.map(r=>r.position + ' ('+r.games+')'),
+      datasets:[{ data: roles.map(r=>r.winrate),
+        backgroundColor: roles.map(r=>wrColor(r.winrate)) }] },
+    options: baseOpts({ scales:{ y:{min:0,max:100,grid:{color:GRID},
+      ticks:{color:MUTED,callback:v=>v+'%'}}, x:{grid:{display:false},ticks:{color:MUTED}} } })
+  });
+
+  // Laning-Histogramme
+  ['cs10','cs14','gold_diff_10','xp_diff_10'].forEach(key=>{
+    const el = document.getElementById('hist_'+key);
+    if(!el) return;
+    const h = DATA.laning[key].hist;
+    const isDiff = key.indexOf('diff') >= 0;
+    new Chart(el, {
+      type:'bar',
+      data:{ labels: h.labels, datasets:[{ data: h.counts,
+        backgroundColor: isDiff ? h.labels.map(l=> parseFloat(l) < 0 ? BAD : LIME) : LIME }] },
+      options: baseOpts({ plugins:{legend:{display:false}},
+        scales:{ x:{grid:{display:false},ticks:{color:MUTED,maxRotation:0,autoSkip:true}},
+          y:{grid:{color:GRID},ticks:{color:MUTED,precision:0}} } })
+    });
+  });
+
+  // Sessions
+  const sp = DATA.sessions.by_position;
+  new Chart(document.getElementById('sessionChart'), {
+    type:'bar',
+    data:{ labels: sp.map(s=>s.position + ' ('+s.games+')'),
+      datasets:[{ data: sp.map(s=>s.winrate), backgroundColor: sp.map(s=>wrColor(s.winrate)) }] },
+    options: baseOpts({ scales:{ y:{min:0,max:100,grid:{color:GRID},
+      ticks:{color:MUTED,callback:v=>v+'%'}}, x:{grid:{display:false},ticks:{color:MUTED}} } })
+  });
+
+  // Deaths nach Phase
+  const d = DATA.deaths;
+  new Chart(document.getElementById('deathChart'), {
+    type:'bar',
+    data:{ labels: d.phase_labels, datasets:[{ data: d.phase_counts,
+      backgroundColor:[BAD, '#e0a020', LIME] }] },
+    options: baseOpts({ scales:{ x:{grid:{display:false},ticks:{color:MUTED}},
+      y:{grid:{color:GRID},ticks:{color:MUTED,precision:0}} } })
+  });
+}
+</script>
+{% endif %}
+</body>
+</html>
