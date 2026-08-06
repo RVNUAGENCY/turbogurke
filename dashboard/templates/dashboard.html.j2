@@ -100,7 +100,7 @@
       <div class="rank">{{ rank.tier_label }} <span class="lp">{{ rank.lp }} LP</span></div>
       <div class="rec">Season {{ rank.wins }}W / {{ rank.losses }}L
         {% if rank.season_winrate is not none %}({{ rank.season_winrate }}%){% endif %}</div>
-      <div class="rec">DB: {{ results.overall.games }} Ranked-Games analysiert</div>
+      <div class="rec">{% if meta.window_note %}⏱ {{ meta.window_note }}{% else %}DB: {{ results.overall.games }} Ranked-Games{% endif %} analysiert</div>
     </div>
   </header>
 

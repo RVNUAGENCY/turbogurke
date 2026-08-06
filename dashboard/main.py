@@ -6,8 +6,8 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
-import time
 import webbrowser
 from datetime import datetime, timezone
 
@@ -100,13 +100,14 @@ def fetch_incremental(client: RiotClient, store: Storage, puuid: str, max_new: i
     return done
 
 
-def print_summary(results: dict, rank: dict) -> None:
+def print_summary(results: dict, rank: dict, window_note: str | None = None) -> None:
     line = "=" * 62
     print(f"\n{line}")
     print("  TURBOGURKE — CLIMB TRACKER · Top-Baustellen (LP-Impact)")
     print(line)
+    scope = window_note if window_note else "DB gesamt"
     print(f"  Rank: {rank['tier_label']} {rank['lp']} LP   |   "
-          f"DB-Winrate: {results['overall']['winrate']}% "
+          f"Winrate ({scope}): {results['overall']['winrate']}% "
           f"({results['overall']['wins']}W/{results['overall']['losses']}L, "
           f"{results['overall']['games']} Games)")
     print(line)
@@ -125,6 +126,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Lokales LoL-Performance-Dashboard")
     parser.add_argument("--max", type=int, default=300,
                         help="Max. neue Matches pro Lauf (Erst-Backfill-Cap). Default 300.")
+    parser.add_argument("--last", type=int, default=None,
+                        help="Nur die juengsten N Games auswerten (z. B. --last 50 fuer die aktuelle Form).")
     parser.add_argument("--no-fetch", action="store_true",
                         help="Nicht von der API ziehen, nur aus der DB rendern.")
     parser.add_argument("--rebuild", action="store_true",
@@ -153,7 +156,7 @@ def main(argv: list[str] | None = None) -> int:
                 entries = client.get_league_entries_by_puuid(puuid)
                 solo = next((e for e in entries if e.get("queueType") == "RANKED_SOLO_5x5"), None)
                 rank = _fmt_tier(solo)
-                store.set_meta("rank_json", str(rank))
+                store.set_meta("rank_json", json.dumps(rank))
             except RiotApiError as exc:
                 print(f"  Rank konnte nicht geladen werden: {exc}", flush=True)
 
@@ -164,6 +167,17 @@ def main(argv: list[str] | None = None) -> int:
                 print("Keine PUUID in der DB — erster Lauf braucht einen API-Key (ohne --no-fetch).",
                       file=sys.stderr)
                 return 2
+            # Rank aus dem letzten Online-Lauf wiederverwenden (Offline-Render).
+            cached = store.get_meta("rank_json")
+            if cached:
+                try:
+                    rank = json.loads(cached)
+                except (ValueError, TypeError):
+                    try:  # Fallback: aeltere Laeufe speicherten Python-repr
+                        import ast
+                        rank = ast.literal_eval(cached)
+                    except (ValueError, SyntaxError):
+                        pass
 
         if args.rebuild:
             print("Baue abgeleitete Tabellen aus dem Raw-Cache neu ...", flush=True)
@@ -171,8 +185,17 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {n} Matches neu verarbeitet.", flush=True)
 
         # Analyse
-        player_rows = store.player_matches()
+        player_rows = store.player_matches()   # chronologisch aufsteigend
         laning_rows = store.laning_rows()
+        # --last N: nur die juengsten N Games auswerten (Naeherung fuer
+        # "aktuelle Form / ab aktuellem Rank"; Riot liefert kein Tier-pro-Game).
+        window_note = None
+        if args.last and args.last < len(player_rows):
+            player_rows = player_rows[-args.last:]
+            keep = {r["match_id"] for r in player_rows}
+            laning_rows = [r for r in laning_rows if r["match_id"] in keep]
+            window_note = f"letzte {len(player_rows)} Games"
+            print(f"Filter: nur {window_note} (von {store.match_count()} in DB).", flush=True)
         results = run_all(player_rows, laning_rows)
 
         # Render
@@ -180,12 +203,13 @@ def main(argv: list[str] | None = None) -> int:
             "generated_at": datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M"),
             "version": "1.0.0",
             "verbose": True,
+            "window_note": window_note,
         }
         path = render_dashboard(results, rank, meta)
         print(f"\nDashboard geschrieben: {path}", flush=True)
 
         # Terminal-Summary
-        print_summary(results, rank)
+        print_summary(results, rank, window_note)
 
         if args.open:
             webbrowser.open(f"file://{path.resolve()}")
