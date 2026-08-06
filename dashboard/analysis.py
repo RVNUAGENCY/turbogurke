@@ -323,7 +323,32 @@ def top_problems(results: dict, limit: int = 3) -> list[dict]:
     nur der Priorisierung, nicht als exakte Vorhersage.
     """
     lp = config.LP_PER_NET_WIN
+    base_wr = results["overall"]["winrate"]
     problems: list[dict] = []
+
+    # 0) Off-Role-Drag — oft die groesste versteckte Baustelle.
+    #    Riot fuellt teamPosition==individualPosition, d.h. das Autofill-Flag
+    #    greift nicht; schwache Rollen verstecken sich sonst im Rollen-Split.
+    sig_roles = [r for r in results["roles"]["roles"] if r["games"] >= 15]
+    if len(sig_roles) >= 2:
+        best = max(sig_roles, key=lambda r: r["winrate"])
+        worst = min(sig_roles, key=lambda r: r["winrate"])
+        if worst["games"] >= 20 and worst["winrate"] < base_wr - 3 \
+                and worst["position"] != best["position"]:
+            lost_net = (base_wr - worst["winrate"]) / 100.0 * worst["games"] * 2
+            problems.append({
+                "key": "role_drag",
+                "title": f"Off-Role {worst['position']} kostet am meisten LP",
+                "detail": (
+                    f"{worst['position']}: {worst['winrate']}% ueber {worst['games']} Games "
+                    f"vs. {base_wr}% gesamt — deine schwaechste Rolle."
+                ),
+                "advice": (
+                    f"Diese Rolle meiden. Im Fill lieber {best['position']} "
+                    f"({best['winrate']}%) spielen — deine staerkste Rolle."
+                ),
+                "lp_impact": round(lost_net * lp),
+            })
 
     # 1) Off-Champ-Drag
     lt = results["long_tail"]
@@ -341,7 +366,6 @@ def top_problems(results: dict, limit: int = 3) -> list[dict]:
 
     # 2) Tilt / Verlustserien
     al = results["sessions"]["after_loss"]
-    base_wr = results["overall"]["winrate"]
     if al["games"] >= 5:
         wr_gap = base_wr - al["winrate"]  # Prozentpunkte schlechter nach Loss
         if wr_gap > 0:
