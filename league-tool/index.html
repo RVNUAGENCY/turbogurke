@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Climb Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{
+  --bg:#0A1220; --panel:#101B2D; --panel2:#16233A; --line:#24324B; --line2:#2F4060;
+  --ink:#EDE6D2; --ink2:#C4BBA6; --muted:#8C97AB;
+  --gold:#C9A961; --gold2:#E8D39A; --teal:#1FB3A3; --teal2:#7FDDD2;
+  --good:#4CC38A; --warn:#E1B450; --crit:#E5484D;
+  --display:"Cinzel",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:6px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{margin:0;font-family:var(--display);font-weight:600;text-wrap:balance;letter-spacing:.02em}
+h1{font-size:1.7rem;color:var(--gold2)}
+h2{font-size:1.15rem;color:var(--gold2)}
+h3{font-size:.95rem;color:var(--ink)}
+p{margin:0 0 .6em}
+a{color:var(--teal2)}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:600}
+
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100%}
+.side{background:linear-gradient(180deg,#0C1526 0%,#0A1220 100%);border-right:1px solid var(--line);padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+.brand .name{font-family:var(--display);font-weight:700;font-size:1.05rem;white-space:nowrap;color:var(--gold2);letter-spacing:.06em}
+.brand .sub{font-size:.75rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;text-align:left;background:none;border:0;border-left:2px solid transparent;padding:9px 10px;border-radius:0 var(--r) var(--r) 0;color:var(--ink2);cursor:pointer}
+.nav button:hover{background:var(--panel);color:var(--ink)}
+.nav button.on{background:var(--panel);color:var(--gold2);border-left-color:var(--gold)}
+.nav button svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.side .rankbox{margin-top:auto;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.side .rankbox .rk{font-family:var(--display);font-size:1.05rem;color:var(--gold2)}
+
+main{padding:28px 32px 90px;max-width:1180px;width:100%}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.head .title p{margin:.3em 0 0;color:var(--muted)}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g23{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
+.g32{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.panel.flat{background:transparent}
+.panel > h2, .panel > .ph{margin-bottom:12px}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ph h2{margin:0}
+.stack{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
+
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tile{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.tile .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
+.tile .val{font-size:1.6rem;font-weight:600;line-height:1.2;margin-top:2px;font-variant-numeric:tabular-nums}
+.tile .sub{font-size:.8rem;color:var(--muted)}
+
+/* buttons */
+.btn{background:var(--panel2);border:1px solid var(--line2);color:var(--ink);padding:7px 12px;border-radius:var(--r);cursor:pointer;display:inline-flex;align-items:center;gap:6px;line-height:1.2}
+.btn:hover{border-color:var(--gold);color:var(--gold2)}
+.btn.primary{background:linear-gradient(180deg,#D6B975,#B8975A);color:#1A1406;border-color:#8F7539;font-weight:600}
+.btn.primary:hover{filter:brightness(1.06);color:#1A1406}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--line2)}
+.btn.danger{border-color:#7A2E32;color:#F1A4A7}
+.btn.danger:hover{background:#3A1417;color:#fff;border-color:var(--crit)}
+.btn.sm{padding:4px 9px;font-size:.85rem}
+.btn:focus-visible,.nav button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.check:focus-within,summary:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* forms */
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--ink2)}
+label.f > span{font-weight:500}
+input,select,textarea{background:#0B1526;border:1px solid var(--line2);border-radius:var(--r);padding:7px 10px;color:var(--ink);width:100%}
+input[type=checkbox]{width:auto}
+textarea{min-height:80px;resize:vertical}
+select option{background:#0B1526}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fgrid .wide{grid-column:1/-1}
+.inline-edit{width:100%;min-height:96px}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:.75rem;font-weight:600;letter-spacing:.02em;border:1px solid var(--line2);color:var(--ink2);background:var(--panel2)}
+.chip.win{color:#9BE3BE;border-color:#2E6B4F;background:#12301F}
+.chip.loss{color:#F5A9AC;border-color:#7A2E32;background:#33161A}
+.chip.remake{color:var(--muted)}
+.chip.gold{color:var(--gold2);border-color:#6E5A2E;background:#2A2412}
+.chip.teal{color:var(--teal2);border-color:#1E5B57;background:#0F2B2B}
+.chip.warn{color:#F3D48A;border-color:#6E5A2E;background:#2A2412}
+.chip.crit{color:#F5A9AC;border-color:#7A2E32;background:#33161A}
+.chip.good{color:#9BE3BE;border-color:#2E6B4F;background:#12301F}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* checklist */
+.check{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:var(--r);border:1px solid transparent;cursor:pointer}
+.check:hover{background:var(--panel2)}
+.check input{margin-top:4px;accent-color:var(--gold)}
+.check.done span.t{color:var(--muted);text-decoration:line-through}
+.phase{margin-bottom:12px}
+.phase .eyebrow{margin:0 0 4px 10px}
+.progress{height:6px;background:#0B1526;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--teal2))}
+.progress.gold > i{background:linear-gradient(90deg,var(--gold),var(--gold2))}
+
+/* tables */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--panel2)}
+.bar{height:8px;background:#0B1526;border-radius:2px;overflow:hidden;min-width:80px}
+.bar > i{display:block;height:100%;background:var(--teal);border-radius:0 2px 2px 0}
+
+/* cards list */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;cursor:pointer}
+.card:hover{border-color:var(--gold)}
+.card h3{font-size:1.05rem}
+.card .meta{font-size:.8rem;color:var(--muted)}
+
+/* goals */
+.goal{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px}
+.goal.focus{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.goal .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+
+/* heatmap */
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,14px);gap:3px}
+.heat i{width:14px;height:14px;border-radius:2px;background:var(--teal);display:block;border:1px solid var(--line)}
+
+/* details */
+details{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);margin-bottom:8px}
+summary{cursor:pointer;padding:12px 14px;font-family:var(--display);font-weight:600;color:var(--gold2);list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--muted);font-family:var(--sans);font-weight:400}
+details[open] summary::after{content:"–"}
+details .body{padding:0 14px 14px;color:var(--ink2);max-width:72ch}
+details .body ul{padding-left:18px;margin:.3em 0 .6em}
+details .body li{margin:.2em 0}
+details .body b{color:var(--ink)}
+details .body .rule{border-left:2px solid var(--gold);padding:6px 10px;margin:.6em 0;background:var(--panel2);color:var(--ink)}
+details.step summary{font-family:var(--sans);font-weight:500;color:var(--ink)}
+
+/* chart */
+.chart{position:relative}
+.chart svg{width:100%;height:auto;display:block}
+.chart .tip{position:absolute;pointer-events:none;background:#0B1526;border:1px solid var(--line2);border-radius:var(--r);padding:5px 8px;font-size:.8rem;transform:translate(-50%,-110%);white-space:nowrap;display:none}
+
+/* modal */
+dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line2);border-radius:8px;padding:0;width:min(640px,calc(100% - 32px));max-height:calc(100% - 32px)}
+dialog::backdrop{background:rgba(3,8,16,.7)}
+dialog form{padding:20px}
+dialog h2{margin-bottom:14px}
+.dact{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1E2D47;border:1px solid var(--gold);color:var(--gold2);padding:8px 14px;border-radius:var(--r);font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+#toast.show{opacity:1}
+
+.banner{background:#1F2A17;border:1px solid #4A6A2E;color:#D6E8B8;border-radius:var(--r);padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+.empty{color:var(--muted);padding:14px;border:1px dashed var(--line2);border-radius:var(--r);text-align:center}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.9rem}
+.kv b{color:var(--muted);font-weight:500}
+.search{max-width:320px}
+.tabbar{display:none}
+.editable{white-space:pre-wrap;color:var(--ink2)}
+.section-note{display:flex;flex-direction:column;gap:6px}
+.section-note h3{display:flex;justify-content:space-between;align-items:center}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{display:none}
+  main{padding:18px 16px 96px}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;background:#0C1526;border-top:1px solid var(--line);overflow-x:auto;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));gap:4px;z-index:20;scrollbar-width:none}
+  .tabbar button{flex:none;background:none;border:0;color:var(--muted);padding:6px 10px;border-radius:var(--r);font-size:.8rem;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+  .tabbar button.on{color:var(--gold2);background:var(--panel)}
+  .tabbar button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .g2,.g3,.g4,.g23,.g32{grid-template-columns:1fr}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fgrid{grid-template-columns:1fr}
+  h1{font-size:1.4rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><span class="name">CLIMB JOURNAL</span><span class="sub">Ranked Improvement</span></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="rankbox" id="rankbox"></div>
+  </aside>
+  <main id="main"></main>
+</div>
+<nav class="tabbar" id="tabbar"></nav>
+<dialog id="dlg"><form id="dlgForm" method="dialog"></form></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<datalist id="champList"></datalist>
+
+<script>
+/* ---------- helpers ---------- */
+const KEY='climb-journal-v1';
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+function ld(d=new Date()){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+function addDays(iso,n){const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return ld(d);}
+function fmtDate(iso){if(!iso)return'';const [y,m,d]=iso.split('-');return `${d}.${m}.${y.slice(2)}`;}
+function weekKey(iso){const d=new Date(iso+'T12:00:00');const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day+3);const y=d.getFullYear();const jan4=new Date(y,0,4);const w=1+Math.round(((d-jan4)/86400000-3+((jan4.getDay()+6)%7))/7);return `${y}-W${pad(w)}`;}
+function weekStart(iso){const d=new Date(iso+'T12:00:00');const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return ld(d);}
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800);}
+
+const ROLES=['Top','Jungle','Mid','ADC','Support'];
+const MISTAKES=['Positioning','Wave Management','Trading','Vision','Objectives','Macro / Rotation','Recall Timing','Overextending','Teamfight','Mechanics','Tilt / Mental','Kein klarer Fehler'];
+const PHASES=['Lvl 1–3','Laning','First Recall','Mid Game','Objective Setup','Teamfight','Sidelane','Late Game'];
+const RANKS=['Iron','Bronze','Silver','Gold','Platinum','Emerald','Diamond','Master','Grandmaster','Challenger'];
+const DIVS=['IV','III','II','I'];
+const CHAMPS='Aatrox,Ahri,Akali,Akshan,Alistar,Ambessa,Amumu,Anivia,Annie,Aphelios,Ashe,Aurelion Sol,Aurora,Azir,Bard,Bel\'Veth,Blitzcrank,Brand,Braum,Briar,Caitlyn,Camille,Cassiopeia,Cho\'Gath,Corki,Darius,Diana,Dr. Mundo,Draven,Ekko,Elise,Evelynn,Ezreal,Fiddlesticks,Fiora,Fizz,Galio,Gangplank,Garen,Gnar,Gragas,Graves,Gwen,Hecarim,Heimerdinger,Hwei,Illaoi,Irelia,Ivern,Janna,Jarvan IV,Jax,Jayce,Jhin,Jinx,K\'Sante,Kai\'Sa,Kalista,Karma,Karthus,Kassadin,Katarina,Kayle,Kayn,Kennen,Kha\'Zix,Kindred,Kled,Kog\'Maw,LeBlanc,Lee Sin,Leona,Lillia,Lissandra,Lucian,Lulu,Lux,Malphite,Malzahar,Maokai,Master Yi,Mel,Milio,Miss Fortune,Mordekaiser,Morgana,Naafiri,Nami,Nasus,Nautilus,Neeko,Nidalee,Nilah,Nocturne,Nunu & Willump,Olaf,Orianna,Ornn,Pantheon,Poppy,Pyke,Qiyana,Quinn,Rakan,Rammus,Rek\'Sai,Rell,Renata Glasc,Renekton,Rengar,Riven,Rumble,Ryze,Samira,Sejuani,Senna,Seraphine,Sett,Shaco,Shen,Shyvana,Singed,Sion,Sivir,Skarner,Smolder,Sona,Soraka,Swain,Sylas,Syndra,Tahm Kench,Taliyah,Talon,Taric,Teemo,Thresh,Tristana,Trundle,Tryndamere,Twisted Fate,Twitch,Udyr,Urgot,Varus,Vayne,Veigar,Vel\'Koz,Vex,Vi,Viego,Viktor,Vladimir,Volibear,Warwick,Wukong,Xayah,Xerath,Xin Zhao,Yasuo,Yone,Yorick,Yunara,Yuumi,Zaahen,Zac,Zed,Zeri,Ziggs,Zilean,Zoe,Zyra'.split(',');
+$('#champList').innerHTML=CHAMPS.map(c=>`<option value="${esc(c)}">`).join('');
+
+/* ---------- state ---------- */
+function defaultRoutine(){return{phases:[
+ {id:'pre',name:'Pre-Session',items:[
+  {id:'p1',text:'Fokus-Ziel lesen und in einem Satz sagen, worauf ich heute achte'},
+  {id:'p2',text:'10 min Practice Tool: CS-Drill (Ziel ≥ 80 CS @ 10:00 ohne Gegner)'},
+  {id:'p3',text:'Main-Champ-Combos 20× sauber, Flash-Kombos inklusive'},
+  {id:'p4',text:'Mental-Check: ausgeruht, kein Autopilot, kein „ich muss LP zurückholen“'},
+  {id:'p5',text:'Max. Anzahl Games für heute festlegen (z. B. 4)'}]},
+ {id:'ses',name:'Session-Regeln',items:[
+  {id:'s1',text:'Vor jedem Loading Screen: 1 Prozess-Ziel für dieses Game benennen'},
+  {id:'s2',text:'Nach jedem Game direkt den 60-Sekunden-Log ausfüllen'},
+  {id:'s3',text:'2 Losses in Folge → 10 min Pause, kurz durchatmen'},
+  {id:'s4',text:'3 Losses in Folge → Session beenden (Stop-Loss)'},
+  {id:'s5',text:'Kein Chat außer Pings & Timer'}]},
+ {id:'post',name:'Post-Session',items:[
+  {id:'o1',text:'1 Game reviewen (mind. 3 Tode mit den 3 Fragen)'},
+  {id:'o2',text:'Takeaways in Champion-Notizen oder Lernziele übertragen'},
+  {id:'o3',text:'LP-Stand eintragen'},
+  {id:'o4',text:'Fokus für morgen festlegen'}]}
+],log:{}};}
+
+function sampleState(){
+ const t=ld();const d=n=>addDays(t,-n);
+ const s={version:1,sample:true,view:'heute',
+  profile:{name:'Dein Summoner',role:'Mid',rank:'Emerald',div:'II',lp:47,goalRank:'Diamond',goalDiv:'IV'},
+  lpHistory:[{date:d(9),v:1},{date:d(8),v:22},{date:d(7),v:14},{date:d(6),v:38},{date:d(5),v:55},{date:d(4),v:41},{date:d(3),v:63},{date:d(2),v:79},{date:d(1),v:32},{date:t,v:47}],
+  routine:defaultRoutine(),
+  games:[
+   {id:uid(),date:d(1),champ:'Orianna',role:'Mid',enemy:'Sylas',result:'Loss',k:2,d:6,a:9,cs10:71,lp:-22,tilt:3,mistake:'Positioning',learning:'Nach Sylas Lvl 6 nie ohne Flash in Ult-Range stehen, wenn sein E up ist.',reviewed:true,note:''},
+   {id:uid(),date:d(1),champ:'Orianna',role:'Mid',enemy:'Ahri',result:'Loss',k:4,d:4,a:7,cs10:83,lp:-25,tilt:2,mistake:'Recall Timing',learning:'Recall auf Slow-Push in mich rein → 2 Wellen verloren. Erst crashen, dann recallen.',reviewed:false,note:''},
+   {id:uid(),date:d(2),champ:'Orianna',role:'Mid',enemy:'Zed',result:'Win',k:5,d:1,a:11,cs10:88,lp:16,tilt:1,mistake:'Kein klarer Fehler',learning:'Freeze vor seinem Lvl 6 hat funktioniert — er musste ohne Wave engagen.',reviewed:false,note:''},
+   {id:uid(),date:d(2),champ:'Ahri',role:'Mid',enemy:'Yasuo',result:'Win',k:7,d:3,a:6,cs10:79,lp:16,tilt:1,mistake:'Wave Management',learning:'',reviewed:false,note:''},
+   {id:uid(),date:d(3),champ:'Orianna',role:'Mid',enemy:'Syndra',result:'Win',k:3,d:2,a:14,cs10:91,lp:22,tilt:1,mistake:'Vision',learning:'Vor Drake 2 kein Ward im Pixel Bush → Jungler-Flank nicht gesehen.',reviewed:true,note:''},
+   {id:uid(),date:d(4),champ:'Orianna',role:'Mid',enemy:'Sylas',result:'Loss',k:1,d:5,a:4,cs10:64,lp:-14,tilt:4,mistake:'Trading',learning:'Lvl 1–3 zu viele Trades gegen Passive-Stacks genommen. Nur Auto-Q wenn seine Chains down.',reviewed:false,note:''},
+   {id:uid(),date:d(5),champ:'Orianna',role:'Mid',enemy:'Akali',result:'Win',k:4,d:1,a:9,cs10:86,lp:17,tilt:1,mistake:'Kein klarer Fehler',learning:'',reviewed:false,note:''},
+   {id:uid(),date:d(6),champ:'Ahri',role:'Mid',enemy:'LeBlanc',result:'Win',k:6,d:2,a:8,cs10:75,lp:24,tilt:2,mistake:'Positioning',learning:'',reviewed:false,note:''}
+  ],
+  champs:[
+   {id:'c1',name:'Orianna',tier:'main',role:'Mid',notes:{
+     wincon:'Wave-Kontrolle + Ult-Flanks in Teamfights. Ich gewinne über Prio (Objectives) und Shockwave auf 3+, nicht über Solo-Kills.',
+     combos:'• Q → W (Standard-Poke)\n• Ball on Ally → E → R (Flank)\n• Flash → R (nur mit Ball auf mir, wenn 3+ gestackt)\n• Auto-Attack-Reset nach Passive-Stacks in Trades',
+     spikes:'Lvl 6, Lost Chapter (~5:30), Luden/Liandry + Sorc, 2 Items. Schwach: Lvl 1–2 gegen Melee-All-In.',
+     build:'Runen: Sorcery (Summon Aery / Manaflow / Transcendence / Scorch) + Inspiration (Biscuit / Cosmic). Build: Luden → Shadowflame → Rabadon. Zhonya vs Assassins 2nd.',
+     waves:'Slow-Push in Wave 2–3 → Crash Wave 3 mit Cannon → Lvl 2 zuerst. Vor Grubs/Drake: Slow-Push aufbauen, dann roamen.',
+     dodont:'DO: Ball immer als Zone nutzen, Shield auf Frontliner.\nDON\'T: Ohne Flash in Sylas/Zed-Range stehen, Ult auf 1 Ziel wasten.'},
+    matchups:[
+     {id:'m1',enemy:'Sylas',diff:4,lvl13:'Lvl 1–2 nur Auto-Q wenn er für CS steppt. Kein Trade wenn seine Passive-Stack up ist.',laning:'Ab Lvl 3 short trades nach seinem E-Miss. Wave nahe meinem Turm halten bis Lost Chapter.',punish:'E (Chains) auf Cooldown = 5 s Fenster für Q-W. Nach seinem R-Steal weiß ich, was er hat — anpassen.',notes:'Ab Lvl 6 immer Flash-Distanz + Zhonya 2nd erwägen.'},
+     {id:'m2',enemy:'Zed',diff:3,lvl13:'Lvl 1–3 gewinne ich mit Auto-Q. Freeze vor seinem Lvl 6 aufbauen.',laning:'Nach W-E-Q Poke von ihm: er hat 10+ s nichts → aggressiv tauschen.',punish:'Wenn er Shadow (W) fürs Farmen benutzt: 20 s Fenster.',notes:'Zhonya 2nd, Ping wenn er verschwindet — er roamt Bot mit Ult.'},
+     {id:'m3',enemy:'Ahri',diff:2,lvl13:'Skill-Matchup. Wer Wave besser handled gewinnt Prio.',laning:'Ihren E-Charm sidesteppen → sofort Q-W-Auto.',punish:'Charm missed = 12 s Fenster.',notes:''}
+    ]},
+   {id:'c2',name:'Ahri',tier:'backup',role:'Mid',notes:{wincon:'Roam-Timings nach Wave-Crash, Picks mit Charm.',combos:'• Q → E → W\n• R → E → Q (Pick)\n• Flash-Charm',spikes:'Lvl 3, Lvl 6, Lost Chapter.',build:'Electrocute oder Aery. Malignance → Shadowflame.',waves:'Fast-Push → Roam Bot/Top.',dodont:''},matchups:[]},
+   {id:'c3',name:'Syndra',tier:'learn',role:'Mid',notes:{wincon:'',combos:'',spikes:'',build:'',waves:'',dodont:''},matchups:[]}
+  ],
+  goals:[
+   {id:'g1',title:'CS @ 10:00 ≥ 80',metric:'CS bei 10:00',target:80,current:78,unit:'CS',deadline:d(-14),status:'aktiv',focus:true,notes:'Ø der letzten 10 Games. Practice-Tool-Drill morgens + Slow-Push-Regel in Wave 2–3.'},
+   {id:'g2',title:'Tode vor 10:00 ≤ 1',metric:'Tode vor 10:00 (Ø)',target:1,current:1.4,unit:'',deadline:d(-21),status:'aktiv',focus:false,notes:'Weniger Trades ohne Wave-Vorteil. Bei 2+ Toden früh = Review-Pflicht.'},
+   {id:'g3',title:'Jede Session 1 Review',metric:'Reviews pro Woche',target:5,current:2,unit:'',deadline:d(-7),status:'aktiv',focus:false,notes:''},
+   {id:'g4',title:'Orianna: 3 Matchups sauber dokumentiert',metric:'Matchups mit Plan',target:3,current:3,unit:'',deadline:d(2),status:'erreicht',focus:false,notes:'Sylas, Zed, Ahri.'}
+  ],
+  reviews:[
+   {id:'r1',date:d(1),gameId:null,title:'Orianna vs Sylas — Loss (−22)',entries:[
+     {id:'e1',time:'2:40',phase:'Lvl 1–3',what:'Trade Lvl 2 verloren, 40 % HP.',why:'Er hatte 2. Wave zuerst → Lvl 2 vor mir. Ich habe nicht gezählt.',better:'Beim Lvl-2-Race zurückziehen, Auto-Q nur aus Range.'},
+     {id:'e2',time:'9:15',phase:'Laning',what:'Tod an Flanke Jungler + Sylas.',why:'Kein Ward, ich stand im Slow-Push ohne Flash.',better:'Ward bei 8:30 setzen (vor Grubs), Wave crashen statt halten.'},
+     {id:'e3',time:'23:40',phase:'Teamfight',what:'Ult auf 1 Ziel, Fight verloren.',why:'Panik-Ult, Ball war nicht auf Frontliner.',better:'Ball auf Malphite parken bevor Fight startet; Ult erst bei 3+.'}],
+    takeaways:['Lvl-2-Minions zählen (7 Solo-Lane)','Ward vor Grubs bei 8:30, nicht erst wenn Jungler weg ist']}
+  ],
+  weekly:[
+   {id:'w1',week:weekKey(d(7)),good:'Konsistente Wave-Crashes vor Recall, Tilt-Level unter 2 gehalten.',bad:'Sylas-Matchup 0:2, zu viele frühe Trades.',focus:'Sylas-Plan Lvl 1–3 aufschreiben und nur 1 Champ spielen.',mental:'Zufrieden — 3 Sessions mit Stop-Loss eingehalten.'}
+  ],
+  notes:[
+   {id:'n1',date:d(2),title:'Coaching-Erkenntnis: Tempo',body:'„Tempo = Zeit, in der du etwas auf der Map tust, während der Gegner nichts tun kann.“ Recall nach Crash → Gegner muss die Wave nehmen → ich bin zuerst zurück und habe Items + Prio.',tags:['macro','tempo']},
+   {id:'n2',date:d(4),title:'Video: Wave Management Guide anschauen',body:'Freeze-Setup: 3–4 gegnerische Minions mehr als eigene, außerhalb Turm-Range. Nur Last-Hit, kein Auto zwischendurch.',tags:['waves','todo']}
+  ]
+ };
+ s.routine.log[d(1)]={p1:1,p2:1,p3:1,p4:1,p5:1,s1:1,s2:1,s3:1,s4:1,s5:1,o1:1,o2:1,o3:1};
+ s.routine.log[d(2)]={p1:1,p2:1,p4:1,p5:1,s1:1,s2:1,s3:1,s4:1,s5:1,o3:1};
+ s.routine.log[d(3)]={p1:1,p2:1,p3:1,p4:1,p5:1,s1:1,s2:1,s3:1,s4:1,s5:1,o1:1,o2:1,o3:1,o4:1};
+ s.routine.log[d(4)]={p1:1,p4:1,s2:1,s3:1};
+ s.routine.log[d(5)]={p1:1,p2:1,p3:1,p4:1,p5:1,s1:1,s2:1,s3:1,s4:1,s5:1,o1:1,o3:1,o4:1};
+ s.routine.log[d(6)]={p1:1,p2:1,p4:1,s1:1,s2:1,s5:1,o3:1};
+ return s;
+}
+function emptyState(){const s=sampleState();s.sample=false;s.games=[];s.champs=[];s.goals=[];s.reviews=[];s.weekly=[];s.notes=[];s.lpHistory=[];s.routine=defaultRoutine();s.profile={name:'',role:'Mid',rank:'Gold',div:'IV',lp:0,goalRank:'Platinum',goalDiv:'IV'};return s;}
+
+let S;
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){S=JSON.parse(raw);return;}}catch(e){}S=sampleState();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+/* ---------- derived ---------- */
+const sortGames=()=>[...S.games].sort((a,b)=>b.date.localeCompare(a.date)||S.games.indexOf(b)-S.games.indexOf(a));
+function winrate(list){const p=list.filter(g=>g.result!=='Remake');const w=p.filter(g=>g.result==='Win').length;return{w,n:p.length,wr:pct(w,p.length)};}
+function routinePct(date){const items=S.routine.phases.flatMap(p=>p.items);const log=S.routine.log[date]||{};return pct(items.filter(i=>log[i.id]).length,items.length);}
+function streak(){let n=0;let d=ld();if(routinePct(d)===0&&!S.games.some(g=>g.date===d))d=addDays(d,-1);while(routinePct(d)>0||S.games.some(g=>g.date===d)){n++;d=addDays(d,-1);if(n>999)break;}return n;}
+function rankLabel(r,d,lp){const apex=['Master','Grandmaster','Challenger'].includes(r);return `${r}${apex?'':' '+d}${lp!=null?' · '+lp+' LP':''}`;}
+function groupBy(list,fn){const m={};list.forEach(x=>{const k=fn(x);(m[k]=m[k]||[]).push(x)});return m;}
+function mistakeStats(list){const m=groupBy(list.filter(g=>g.mistake&&g.mistake!=='Kein klarer Fehler'),g=>g.mistake);return Object.entries(m).map(([k,v])=>({k,n:v.length})).sort((a,b)=>b.n-a.n);}
+
+/* ---------- nav ---------- */
+const I={
+ heute:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+ routine:'<svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
+ games:'<svg viewBox="0 0 24 24"><path d="M14 4l6 6-9 9H5v-6z"/><path d="M4 20l3-3"/></svg>',
+ champs:'<svg viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7z"/></svg>',
+ ziele:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>',
+ review:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>',
+ woche:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+ wissen:'<svg viewBox="0 0 24 24"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/><path d="M11 5c-1 1-1 13 0 14M13 5c1 1 1 13 0 14"/></svg>',
+ notizen:'<svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8"/></svg>',
+ daten:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>'
+};
+const VIEWS=[['heute','Heute'],['routine','Routine'],['games','Games'],['champs','Champions'],['ziele','Lernziele'],['review','Review'],['woche','Wochen-Review'],['wissen','Wissen'],['notizen','Notizen'],['daten','Daten']];
+let view='heute',sub=null;
+function go(v,s=null){view=v;sub=s;S.view=v;save();render();window.scrollTo({top:0});}
+function renderNav(){
+ $('#nav').innerHTML=VIEWS.map(([k,l])=>`<button data-go="${k}" class="${view===k?'on':''}">${I[k]}<span>${l}</span></button>`).join('');
+ $('#tabbar').innerHTML=VIEWS.map(([k,l])=>`<button data-go="${k}" class="${view===k?'on':''}">${I[k]}<span>${l}</span></button>`).join('');
+ const p=S.profile;
+ $('#rankbox').innerHTML=`<div class="eyebrow">Aktuell</div><div class="rk">${esc(rankLabel(p.rank,p.div,p.lp))}</div><div class="small muted">Ziel: ${esc(rankLabel(p.goalRank,p.goalDiv))}</div>`;
+}
+
+/* ---------- modal form ---------- */
+function field(f){
+ const v=f.value??'';
+ if(f.type==='select')return `<label class="f ${f.wide?'wide':''}"><span>${f.label}</span><select name="${f.name}" id="fld-${f.name}">${f.options.map(o=>{const [val,lab]=Array.isArray(o)?o:[o,o];return `<option value="${esc(val)}" ${String(val)===String(v)?'selected':''}>${esc(lab)}</option>`}).join('')}</select></label>`;
+ if(f.type==='textarea')return `<label class="f ${f.wide?'wide':''}"><span>${f.label}</span><textarea name="${f.name}" id="fld-${f.name}" placeholder="${esc(f.ph||'')}">${esc(v)}</textarea></label>`;
+ if(f.type==='checkbox')return `<label class="f ${f.wide?'wide':''}" style="flex-direction:row;align-items:center;gap:8px;margin-top:18px"><input type="checkbox" name="${f.name}" id="fld-${f.name}" ${v?'checked':''}><span>${f.label}</span></label>`;
+ return `<label class="f ${f.wide?'wide':''}"><span>${f.label}</span><input type="${f.type||'text'}" name="${f.name}" id="fld-${f.name}" value="${esc(v)}" ${f.list?`list="${f.list}"`:''} ${f.min!=null?`min="${f.min}"`:''} ${f.max!=null?`max="${f.max}"`:''} ${f.step?`step="${f.step}"`:''} placeholder="${esc(f.ph||'')}" ${f.required?'required':''}></label>`;
+}
+function openForm({title,fields,submit='Speichern',onSubmit,onDelete}){
+ const dlg=$('#dlg'),form=$('#dlgForm');
+ form.innerHTML=`<h2>${title}</h2><div class="fgrid">${fields.map(field).join('')}</div><div class="dact">${onDelete?'<button type="button" class="btn danger" id="dlgDel">Löschen</button><span style="flex:1"></span>':''}<button type="button" class="btn ghost" id="dlgCancel">Abbrechen</button><button type="submit" class="btn primary">${submit}</button></div>`;
+ form.onsubmit=e=>{e.preventDefault();const fd=new FormData(form);const o={};fields.forEach(f=>{if(f.type==='checkbox')o[f.name]=form.elements[f.name].checked;else if(f.type==='number'){const raw=fd.get(f.name);o[f.name]=raw===''||raw==null?null:Number(raw);}else o[f.name]=(fd.get(f.name)??'').toString().trim();});onSubmit(o);dlg.close();};
+ $('#dlgCancel',form).onclick=()=>dlg.close();
+ if(onDelete)$('#dlgDel',form).onclick=()=>{if(confirm('Wirklich löschen?')){onDelete();dlg.close();}};
+ dlg.showModal();const first=form.querySelector('input,select,textarea');first&&first.focus();
+}
+
+/* ---------- forms ---------- */
+function gameForm(g){
+ const isNew=!g;g=g||{date:ld(),champ:S.champs.find(c=>c.tier==='main')?.name||'',role:S.profile.role,enemy:'',result:'Win',k:null,d:null,a:null,cs10:null,lp:null,tilt:1,mistake:'Kein klarer Fehler',learning:'',reviewed:false,note:''};
+ openForm({title:isNew?'Game loggen':'Game bearbeiten',fields:[
+  {name:'date',label:'Datum',type:'date',value:g.date,required:true},{name:'result',label:'Ergebnis',type:'select',options:['Win','Loss','Remake'],value:g.result},
+  {name:'champ',label:'Mein Champion',value:g.champ,list:'champList',required:true},{name:'enemy',label:'Gegner-Champion (Lane)',value:g.enemy,list:'champList'},
+  {name:'role',label:'Rolle',type:'select',options:ROLES,value:g.role},{name:'lp',label:'LP-Änderung (z. B. −18 oder 22)',type:'number',value:g.lp,step:1},
+  {name:'k',label:'Kills',type:'number',value:g.k,min:0},{name:'d',label:'Deaths',type:'number',value:g.d,min:0},
+  {name:'a',label:'Assists',type:'number',value:g.a,min:0},{name:'cs10',label:'CS @ 10:00',type:'number',value:g.cs10,min:0},
+  {name:'tilt',label:'Tilt-Level (1 ruhig – 5 tilted)',type:'select',options:[1,2,3,4,5],value:g.tilt},{name:'mistake',label:'Hauptfehler',type:'select',options:MISTAKES,value:g.mistake},
+  {name:'learning',label:'1 Learning aus diesem Game',type:'textarea',value:g.learning,wide:true,ph:'Was mache ich nächstes Mal konkret anders?'},
+  {name:'note',label:'Notiz (optional)',type:'textarea',value:g.note,wide:true},
+  {name:'reviewed',label:'Game wurde reviewt',type:'checkbox',value:g.reviewed}
+ ],onSubmit:o=>{
+  if(isNew){const n={id:uid(),...o};S.games.push(n);if(o.lp!=null&&o.lp!==0){S.profile.lp=Math.max(0,(S.profile.lp||0)+o.lp);pushLP();}toast('Game gespeichert');}
+  else{Object.assign(g,o);toast('Aktualisiert');}
+  save();render();
+ },onDelete:isNew?null:()=>{S.games=S.games.filter(x=>x.id!==g.id);save();render();toast('Gelöscht');}});
+}
+function pushLP(){const t=ld();const last=S.lpHistory[S.lpHistory.length-1];if(last&&last.date===t)last.v=S.profile.lp;else S.lpHistory.push({date:t,v:S.profile.lp});}
+function profileForm(){
+ const p=S.profile;
+ openForm({title:'Rank & Ziel',fields:[
+  {name:'name',label:'Summoner-Name',value:p.name},{name:'role',label:'Hauptrolle',type:'select',options:ROLES,value:p.role},
+  {name:'rank',label:'Aktueller Rang',type:'select',options:RANKS,value:p.rank},{name:'div',label:'Division',type:'select',options:DIVS,value:p.div},
+  {name:'lp',label:'LP aktuell',type:'number',value:p.lp,min:0},{name:'goalRank',label:'Ziel-Rang',type:'select',options:RANKS,value:p.goalRank},
+  {name:'goalDiv',label:'Ziel-Division',type:'select',options:DIVS,value:p.goalDiv}
+ ],onSubmit:o=>{Object.assign(S.profile,o);if(o.lp==null)S.profile.lp=0;pushLP();save();render();toast('Gespeichert');}});
+}
+function goalForm(g){
+ const isNew=!g;g=g||{title:'',metric:'',target:null,current:null,unit:'',deadline:addDays(ld(),14),status:'aktiv',focus:false,notes:''};
+ openForm({title:isNew?'Neues Lernziel':'Lernziel bearbeiten',fields:[
+  {name:'title',label:'Ziel (messbar formuliert)',value:g.title,wide:true,required:true,ph:'z. B. CS @ 10:00 ≥ 80 in 8 von 10 Games'},
+  {name:'metric',label:'Metrik',value:g.metric,ph:'Was messe ich?'},{name:'unit',label:'Einheit',value:g.unit,ph:'CS, Tode, % …'},
+  {name:'target',label:'Zielwert',type:'number',value:g.target,step:'any'},{name:'current',label:'Ist-Wert',type:'number',value:g.current,step:'any'},
+  {name:'deadline',label:'Deadline',type:'date',value:g.deadline},{name:'status',label:'Status',type:'select',options:['aktiv','pausiert','erreicht'],value:g.status},
+  {name:'notes',label:'Wie erreiche ich das? (Drills, Regeln)',type:'textarea',value:g.notes,wide:true},
+  {name:'focus',label:'Als Tagesfokus markieren',type:'checkbox',value:g.focus}
+ ],onSubmit:o=>{if(isNew){S.goals.push({id:uid(),...o});toast('Ziel angelegt');}else{Object.assign(g,o);toast('Aktualisiert');}save();render();},
+ onDelete:isNew?null:()=>{S.goals=S.goals.filter(x=>x.id!==g.id);save();render();}});
+}
+function champForm(c){
+ const isNew=!c;c=c||{name:'',tier:'main',role:S.profile.role};
+ openForm({title:isNew?'Champion hinzufügen':'Champion bearbeiten',fields:[
+  {name:'name',label:'Champion',value:c.name,list:'champList',required:true},{name:'role',label:'Rolle',type:'select',options:ROLES,value:c.role},
+  {name:'tier',label:'Pool-Status',type:'select',options:[['main','Main'],['backup','Backup'],['learn','Lernen']],value:c.tier,wide:true}
+ ],onSubmit:o=>{if(isNew){const n={id:uid(),...o,notes:{wincon:'',combos:'',spikes:'',build:'',waves:'',dodont:''},matchups:[]};S.champs.push(n);save();go('champs',n.id);}else{Object.assign(c,o);save();render();}},
+ onDelete:isNew?null:()=>{S.champs=S.champs.filter(x=>x.id!==c.id);save();go('champs');}});
+}
+function matchupForm(c,m){
+ const isNew=!m;m=m||{enemy:'',diff:3,lvl13:'',laning:'',punish:'',notes:''};
+ openForm({title:isNew?`Matchup für ${esc(c.name)}`:`${esc(c.name)} vs ${esc(m.enemy)}`,fields:[
+  {name:'enemy',label:'Gegner-Champion',value:m.enemy,list:'champList',required:true},{name:'diff',label:'Schwierigkeit (1 leicht – 5 sehr schwer)',type:'select',options:[1,2,3,4,5],value:m.diff},
+  {name:'lvl13',label:'Plan Lvl 1–3',type:'textarea',value:m.lvl13,wide:true,ph:'Wer gewinnt Lvl 1? Wann Lvl 2? Was darf ich, was nicht?'},
+  {name:'laning',label:'Laning-Muster (Waves, Trades, Recall)',type:'textarea',value:m.laning,wide:true},
+  {name:'punish',label:'Punish-Fenster (Cooldowns, Fehler des Gegners)',type:'textarea',value:m.punish,wide:true},
+  {name:'notes',label:'Weitere Notizen (Build-Anpassung, Roam-Gefahr …)',type:'textarea',value:m.notes,wide:true}
+ ],onSubmit:o=>{o.diff=Number(o.diff);if(isNew)c.matchups.push({id:uid(),...o});else Object.assign(m,o);save();render();toast('Matchup gespeichert');},
+ onDelete:isNew?null:()=>{c.matchups=c.matchups.filter(x=>x.id!==m.id);save();render();}});
+}
+function reviewForm(r){
+ const isNew=!r;const games=sortGames();
+ r=r||{date:ld(),gameId:'',title:''};
+ openForm({title:isNew?'Neues Review':'Review bearbeiten',fields:[
+  {name:'date',label:'Datum',type:'date',value:r.date},
+  {name:'gameId',label:'Game aus dem Log',type:'select',options:[['','— kein Game verknüpft —'],...games.slice(0,40).map(g=>[g.id,`${fmtDate(g.date)} · ${g.champ} vs ${g.enemy||'?'} · ${g.result}${g.reviewed?'':' · nicht reviewt'}`])],value:r.gameId||''},
+  {name:'title',label:'Titel',value:r.title,wide:true,ph:'z. B. Orianna vs Sylas — Loss'}
+ ],onSubmit:o=>{
+  if(!o.title){const g=S.games.find(x=>x.id===o.gameId);o.title=g?`${g.champ} vs ${g.enemy||'?'} — ${g.result}`:'Review';}
+  if(isNew){const n={id:uid(),...o,entries:[],takeaways:[]};S.reviews.push(n);if(o.gameId){const g=S.games.find(x=>x.id===o.gameId);if(g)g.reviewed=true;}save();go('review',n.id);}
+  else{Object.assign(r,o);save();render();}
+ },onDelete:isNew?null:()=>{S.reviews=S.reviews.filter(x=>x.id!==r.id);save();go('review');}});
+}
+function entryForm(r,e){
+ const isNew=!e;e=e||{time:'',phase:PHASES[1],what:'',why:'',better:''};
+ openForm({title:isNew?'Moment hinzufügen':'Moment bearbeiten',fields:[
+  {name:'time',label:'Timestamp',value:e.time,ph:'12:40'},{name:'phase',label:'Phase',type:'select',options:PHASES,value:e.phase},
+  {name:'what',label:'Was ist passiert?',type:'textarea',value:e.what,wide:true},
+  {name:'why',label:'Warum? (Info, die ich hatte oder hätte haben können)',type:'textarea',value:e.why,wide:true},
+  {name:'better',label:'Bessere Entscheidung (konkret, wiederholbar)',type:'textarea',value:e.better,wide:true}
+ ],onSubmit:o=>{if(isNew)r.entries.push({id:uid(),...o});else Object.assign(e,o);save();render();},
+ onDelete:isNew?null:()=>{r.entries=r.entries.filter(x=>x.id!==e.id);save();render();}});
+}
+function weeklyForm(week,w){
+ const isNew=!w;w=w||{week,good:'',bad:'',focus:'',mental:''};
+ openForm({title:`Wochen-Review ${week}`,fields:[
+  {name:'good',label:'Was lief gut? (Prozess, nicht LP)',type:'textarea',value:w.good,wide:true},
+  {name:'bad',label:'Welche Fehler wiederholen sich?',type:'textarea',value:w.bad,wide:true},
+  {name:'focus',label:'Fokus nächste Woche (1 Sache)',type:'textarea',value:w.focus,wide:true},
+  {name:'mental',label:'Mental / Energie / Schlaf',type:'textarea',value:w.mental,wide:true}
+ ],onSubmit:o=>{if(isNew)S.weekly.push({id:uid(),week,...o});else Object.assign(w,o);save();render();toast('Wochen-Review gespeichert');},
+ onDelete:isNew?null:()=>{S.weekly=S.weekly.filter(x=>x.id!==w.id);save();render();}});
+}
+function noteForm(n){
+ const isNew=!n;n=n||{date:ld(),title:'',body:'',tags:[]};
+ openForm({title:isNew?'Neue Notiz':'Notiz bearbeiten',fields:[
+  {name:'title',label:'Titel',value:n.title,required:true},{name:'tags',label:'Tags (Komma-getrennt)',value:n.tags.join(', '),ph:'macro, mental, video'},
+  {name:'body',label:'Inhalt',type:'textarea',value:n.body,wide:true}
+ ],onSubmit:o=>{const tags=o.tags.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean);if(isNew)S.notes.push({id:uid(),date:ld(),title:o.title,body:o.body,tags});else Object.assign(n,{title:o.title,body:o.body,tags});save();render();},
+ onDelete:isNew?null:()=>{S.notes=S.notes.filter(x=>x.id!==n.id);save();render();}});
+}
+function routineItemForm(phase,item){
+ const isNew=!item;
+ openForm({title:isNew?`Punkt zu „${esc(phase.name)}“`:'Punkt bearbeiten',fields:[{name:'text',label:'Text',value:item?item.text:'',wide:true,required:true}],
+ onSubmit:o=>{if(isNew)phase.items.push({id:uid(),text:o.text});else item.text=o.text;save();render();},
+ onDelete:isNew?null:()=>{phase.items=phase.items.filter(x=>x.id!==item.id);save();render();}});
+}
+
+/* ---------- chart ---------- */
+function lpChart(){
+ const pts=S.lpHistory.slice(-30);
+ if(pts.length<2)return `<div class="empty">Trage LP ein — ab 2 Einträgen erscheint der Verlauf.</div>`;
+ const W=480,H=180,P={l:34,r:14,t:12,b:24};
+ const vals=pts.map(p=>p.v);let mn=Math.min(...vals),mx=Math.max(...vals);if(mx-mn<20){mx=mn+20;}mn=Math.max(0,Math.floor(mn/10)*10);mx=Math.ceil(mx/10)*10;
+ const x=i=>P.l+(W-P.l-P.r)*i/(pts.length-1),y=v=>P.t+(H-P.t-P.b)*(1-(v-mn)/(mx-mn));
+ const line=pts.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join('');
+ const area=line+`L${x(pts.length-1).toFixed(1)},${(H-P.b).toFixed(1)}L${P.l},${(H-P.b).toFixed(1)}Z`;
+ const ticks=[mn,Math.round((mn+mx)/2),mx];
+ return `<div class="chart" id="lpChart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="LP-Verlauf">
+  ${ticks.map(t=>`<line x1="${P.l}" x2="${W-P.r}" y1="${y(t)}" y2="${y(t)}" stroke="#24324B" stroke-width="1"/><text x="${P.l-6}" y="${y(t)+4}" text-anchor="end" font-size="12" fill="#8C97AB" font-family="IBM Plex Sans,sans-serif">${t}</text>`).join('')}
+  <path d="${area}" fill="#1FB3A3" fill-opacity=".12"/>
+  <path d="${line}" fill="none" stroke="#1FB3A3" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="${x(pts.length-1)}" cy="${y(pts[pts.length-1].v)}" r="4.5" fill="#1FB3A3" stroke="#101B2D" stroke-width="2"/>
+  <text x="${P.l}" y="${H-6}" font-size="12" fill="#8C97AB" font-family="IBM Plex Sans,sans-serif">${fmtDate(pts[0].date)}</text>
+  <text x="${W-P.r}" y="${H-6}" text-anchor="end" font-size="12" fill="#8C97AB" font-family="IBM Plex Sans,sans-serif">${fmtDate(pts[pts.length-1].date)}</text>
+  <line id="lpCross" x1="0" x2="0" y1="${P.t}" y2="${H-P.b}" stroke="#C9A961" stroke-width="1" stroke-dasharray="3 3" style="display:none"/>
+  <circle id="lpDot" r="4" fill="#C9A961" style="display:none"/>
+  <rect x="${P.l}" y="0" width="${W-P.l-P.r}" height="${H}" fill="transparent" id="lpHit"/>
+ </svg><div class="tip" id="lpTip"></div></div>`;
+}
+function bindChart(){
+ const c=$('#lpChart');if(!c)return;const pts=S.lpHistory.slice(-30);const svg=$('svg',c),hit=$('#lpHit'),cross=$('#lpCross'),dot=$('#lpDot'),tip=$('#lpTip');
+ const W=480,H=180,P={l:34,r:14,t:12,b:24};
+ const vals=pts.map(p=>p.v);let mn=Math.min(...vals),mx=Math.max(...vals);if(mx-mn<20){mx=mn+20;}mn=Math.max(0,Math.floor(mn/10)*10);mx=Math.ceil(mx/10)*10;
+ const x=i=>P.l+(W-P.l-P.r)*i/(pts.length-1),y=v=>P.t+(H-P.t-P.b)*(1-(v-mn)/(mx-mn));
+ const move=e=>{const r=svg.getBoundingClientRect();const px=(e.clientX-r.left)/r.width*W;let i=Math.round((px-P.l)/((W-P.l-P.r)/(pts.length-1)));i=Math.max(0,Math.min(pts.length-1,i));
+  cross.style.display='';dot.style.display='';cross.setAttribute('x1',x(i));cross.setAttribute('x2',x(i));dot.setAttribute('cx',x(i));dot.setAttribute('cy',y(pts[i].v));
+  tip.style.display='block';tip.style.left=(x(i)/W*100)+'%';tip.style.top=(y(pts[i].v)/H*100)+'%';tip.innerHTML=`<b class="num">${pts[i].v} LP</b> <span class="muted">${fmtDate(pts[i].date)}</span>`;};
+ hit.addEventListener('pointermove',move);hit.addEventListener('pointerleave',()=>{cross.style.display='none';dot.style.display='none';tip.style.display='none';});
+}
+
+/* ---------- views ---------- */
+function vHeute(){
+ const t=ld();const todays=S.games.filter(g=>g.date===t);const last20=sortGames().slice(0,20);const wr=winrate(last20);
+ const revQ=pct(S.games.filter(g=>g.reviewed).length,S.games.length);
+ const focus=S.goals.filter(g=>g.focus&&g.status==='aktiv');const active=S.goals.filter(g=>g.status==='aktiv');
+ const rp=routinePct(t);const log=S.routine.log[t]||{};
+ const lastLearn=sortGames().filter(g=>g.learning).slice(0,3);
+ const p=S.profile;
+ return `<div class="head"><div class="title"><div class="eyebrow">${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'})}</div><h1>${esc(p.name||'Heute')}</h1><p>${esc(rankLabel(p.rank,p.div,p.lp))} → Ziel ${esc(rankLabel(p.goalRank,p.goalDiv))}</p></div>
+  <div class="row"><button class="btn" data-act="profile">Rank / LP</button><button class="btn primary" data-act="newGame">+ Game loggen</button></div></div>
+ ${S.sample?`<div class="banner"><span><b>Beispieldaten aktiv.</b> So sieht das Tool im Einsatz aus — unter <b>Daten</b> kannst du sie mit einem Klick entfernen und frisch starten.</span><button class="btn sm" data-go="daten">Zu Daten</button></div>`:''}
+ <div class="tiles" style="margin-bottom:16px">
+  <div class="tile"><div class="lbl">Winrate · letzte ${wr.n||0}</div><div class="val" style="color:${wr.wr>=50?'var(--good)':wr.n?'var(--warn)':'var(--muted)'}">${wr.n?wr.wr+'%':'–'}</div><div class="sub num">${wr.w}W ${wr.n-wr.w}L</div></div>
+  <div class="tile"><div class="lbl">Streak</div><div class="val" style="color:var(--gold2)">${streak()} <span style="font-size:1rem;color:var(--muted)">Tage</span></div><div class="sub">Routine oder Games geloggt</div></div>
+  <div class="tile"><div class="lbl">Review-Quote</div><div class="val" style="color:${revQ>=30?'var(--teal2)':'var(--warn)'}">${S.games.length?revQ+'%':'–'}</div><div class="sub">Ziel: ≥ 1 Review pro Session</div></div>
+  <div class="tile"><div class="lbl">Games heute</div><div class="val">${todays.length}</div><div class="sub num">${winrate(todays).w}W ${winrate(todays).n-winrate(todays).w}L</div></div>
+ </div>
+ <div class="grid g23">
+  <div class="stack">
+   <div class="panel"><div class="ph"><h2>Fokus heute</h2><button class="btn ghost sm" data-go="ziele">Ziele</button></div>
+    ${focus.length?focus.map(g=>goalCard(g,true)).join(''):active.length?`<div class="empty">Kein Ziel als Fokus markiert. <button class="btn sm" data-go="ziele">Fokus setzen</button></div>`:`<div class="empty">Noch kein Lernziel. Ohne Ziel spielst du Autopilot. <button class="btn sm" data-act="newGoal">Erstes Ziel anlegen</button></div>`}
+    ${lastLearn.length?`<hr class="sep"><div class="eyebrow" style="margin-bottom:6px">Letzte Learnings</div><div class="stack" style="gap:6px">${lastLearn.map(g=>`<div class="small"><span class="chip ${g.result.toLowerCase()}">${g.result[0]}</span> <b>${esc(g.champ)}</b> <span class="muted">vs ${esc(g.enemy||'?')}</span> — ${esc(g.learning)}</div>`).join('')}</div>`:''}
+   </div>
+   <div class="panel"><div class="ph"><h2>LP-Verlauf</h2><span class="small muted">letzte ${Math.min(30,S.lpHistory.length)} Einträge</span></div>${lpChart()}</div>
+  </div>
+  <div class="panel"><div class="ph"><h2>Routine heute</h2><span class="chip ${rp===100?'good':rp>=50?'teal':''} num">${rp}%</span></div>
+   <div class="progress" style="margin-bottom:12px"><i style="width:${rp}%"></i></div>
+   ${S.routine.phases.map(ph=>`<div class="phase"><div class="eyebrow">${esc(ph.name)}</div>${ph.items.map(it=>`<label class="check ${log[it.id]?'done':''}"><input type="checkbox" data-rt="${it.id}" ${log[it.id]?'checked':''}><span class="t">${esc(it.text)}</span></label>`).join('')}</div>`).join('')}
+   <div class="row spread" style="margin-top:6px"><button class="btn ghost sm" data-go="routine">Routine bearbeiten</button></div>
+  </div>
+ </div>`;
+}
+function goalCard(g,compact=false){
+ const hasNum=g.target!=null&&g.current!=null;
+ const lowerBetter=g.target!=null&&g.current!=null&&/tod|death|≤|<=|max|weniger/i.test(g.title+g.metric);
+ let prog=0;if(hasNum){prog=lowerBetter?(g.current<=g.target?100:Math.round(g.target/g.current*100)):Math.min(100,Math.round(g.current/g.target*100));}
+ const st=g.status==='erreicht'?'good':g.status==='pausiert'?'':'gold';
+ const days=g.deadline?Math.ceil((new Date(g.deadline+'T12:00')-new Date(ld()+'T12:00'))/86400000):null;
+ return `<div class="goal ${g.focus&&g.status==='aktiv'?'focus':''}"><div class="top"><div><h3>${esc(g.title)}</h3>${g.metric?`<div class="small muted">${esc(g.metric)}</div>`:''}</div><div class="row" style="gap:6px"><span class="chip ${st}">${g.status}</span>${!compact?`<button class="btn ghost sm" data-goal="${g.id}">Bearbeiten</button>`:''}</div></div>
+  ${hasNum?`<div class="row spread small"><span class="num"><b>${g.current}</b> ${esc(g.unit)} <span class="muted">/ Ziel ${g.target} ${esc(g.unit)}</span></span><span class="muted num">${prog}%</span></div><div class="progress gold"><i style="width:${prog}%"></i></div>`:''}
+  ${g.notes&&!compact?`<div class="small muted editable">${esc(g.notes)}</div>`:''}
+  ${days!=null&&g.status==='aktiv'?`<div class="small muted">${days<0?`Deadline vor ${-days} Tagen überschritten`:days===0?'Deadline heute':`noch ${days} Tage`}</div>`:''}
+ </div>`;
+}
+
+function vRoutine(){
+ const t=ld();const weeks=8;const start=addDays(weekStart(t),-(weeks-1)*7);const cells=[];
+ for(let i=0;i<weeks*7;i++){const d=addDays(start,i);const p=d>t?null:routinePct(d);cells.push({d,p});}
+ const done=cells.filter(c=>c.p!=null&&c.p>0);const avg=done.length?Math.round(done.reduce((a,c)=>a+c.p,0)/done.length):0;
+ return `<div class="head"><div class="title"><h1>Routine</h1><p>Die Routine ist das, was du kontrollierst — LP ist nur das Ergebnis. Halte sie klein genug, dass du sie jeden Tag schaffst.</p></div></div>
+ <div class="grid g32">
+  <div class="stack">${S.routine.phases.map(ph=>`<div class="panel"><div class="ph"><h2>${esc(ph.name)}</h2><button class="btn sm" data-rtadd="${ph.id}">+ Punkt</button></div>
+   <div class="stack" style="gap:4px">${ph.items.map(it=>`<div class="row spread check" style="cursor:default"><span>${esc(it.text)}</span><button class="btn ghost sm" data-rtedit="${ph.id}:${it.id}">Bearbeiten</button></div>`).join('')||'<div class="empty">Keine Punkte</div>'}</div></div>`).join('')}
+   <button class="btn" data-act="resetRoutine">Standard-Routine wiederherstellen</button>
+  </div>
+  <div class="stack">
+   <div class="panel"><div class="ph"><h2>Letzte ${weeks} Wochen</h2><span class="chip teal num">Ø ${avg}%</span></div>
+    <div class="tw"><div class="heat">${cells.map(c=>`<i title="${fmtDate(c.d)} · ${c.p==null?'–':c.p+'%'}" style="opacity:${c.p==null?0:c.p===0?.08:.25+c.p/100*.75}"></i>`).join('')}</div></div>
+    <div class="small muted" style="margin-top:8px">Jede Spalte = eine Woche (Mo–So). Je heller, desto vollständiger die Routine.</div></div>
+   <div class="panel"><h2>Warum diese Struktur?</h2><div class="stack small" style="color:var(--ink2)">
+    <p><b>Pre-Session</b> verhindert Autopilot: Fokus lesen, Hände aufwärmen, ehrlich prüfen, ob du in Verfassung bist.</p>
+    <p><b>Session-Regeln</b> schützen dich vor dir selbst. Stop-Loss ist die wichtigste Regel im ganzen Tool — fast alle großen LP-Verluste passieren nach dem 2. Loss.</p>
+    <p><b>Post-Session</b> ist, wo die Verbesserung tatsächlich stattfindet. Ohne Review lernst du nur durch Zufall.</p></div></div>
+  </div>
+ </div>`;
+}
+
+function vGames(){
+ const games=sortGames();const q=(sub&&sub.q)||'';const f=games.filter(g=>!q||(g.champ+' '+g.enemy+' '+g.mistake+' '+g.learning).toLowerCase().includes(q.toLowerCase()));
+ const byChamp=Object.entries(groupBy(games,g=>g.champ)).map(([k,v])=>({k,...winrate(v),cs:avg(v.map(g=>g.cs10))})).sort((a,b)=>b.n-a.n);
+ const byMU=Object.entries(groupBy(games.filter(g=>g.enemy),g=>g.champ+' vs '+g.enemy)).map(([k,v])=>({k,...winrate(v)})).sort((a,b)=>b.n-a.n).slice(0,8);
+ const ms=mistakeStats(games);const mmax=ms[0]?.n||1;
+ return `<div class="head"><div class="title"><h1>Games</h1><p>60 Sekunden pro Game: Ergebnis, Zahlen, <b>ein</b> Fehler, <b>ein</b> Learning. Mehr nicht — sonst hörst du auf zu loggen.</p></div><button class="btn primary" data-act="newGame">+ Game loggen</button></div>
+ <div class="grid g3" style="margin-bottom:16px">
+  <div class="panel"><h2>Pro Champion</h2><div class="tw"><table><thead><tr><th>Champion</th><th class="num">Games</th><th class="num">WR</th><th class="num">Ø CS@10</th></tr></thead><tbody>${byChamp.map(c=>`<tr><td>${esc(c.k)}</td><td class="num">${c.n}</td><td class="num" style="color:${c.wr>=50?'var(--good)':'var(--warn)'}">${c.wr}%</td><td class="num">${c.cs??'–'}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">Noch keine Games</td></tr>'}</tbody></table></div></div>
+  <div class="panel"><h2>Matchups</h2><div class="tw"><table><thead><tr><th>Matchup</th><th class="num">Games</th><th class="num">WR</th></tr></thead><tbody>${byMU.map(c=>`<tr><td>${esc(c.k)}</td><td class="num">${c.n}</td><td class="num" style="color:${c.wr>=50?'var(--good)':'var(--warn)'}">${c.wr}%</td></tr>`).join('')||'<tr><td colspan="3" class="muted">Noch keine Matchups</td></tr>'}</tbody></table></div></div>
+  <div class="panel"><h2>Fehler-Muster</h2><div class="stack" style="gap:8px">${ms.slice(0,6).map(m=>`<div><div class="row spread small"><span>${esc(m.k)}</span><span class="num muted">${m.n}</span></div><div class="bar"><i style="width:${pct(m.n,mmax)}%"></i></div></div>`).join('')||'<div class="muted small">Noch keine Fehler getaggt</div>'}</div>
+   ${ms[0]?`<hr class="sep"><div class="small muted">Häufigster Fehler: <b style="color:var(--ink)">${esc(ms[0].k)}</b>. Wenn das auch nächste Woche oben steht, wird es dein nächstes Lernziel.</div>`:''}</div>
+ </div>
+ <div class="panel"><div class="ph"><h2>Match-Log</h2><input class="search" id="gameSearch" placeholder="Suchen: Champion, Gegner, Fehler …" value="${esc(q)}"></div>
+  <div class="tw"><table><thead><tr><th>Datum</th><th>Matchup</th><th>Rolle</th><th>Ergebnis</th><th class="num">KDA</th><th class="num">CS@10</th><th class="num">LP</th><th>Tilt</th><th>Fehler</th><th>Learning</th><th>Rev.</th></tr></thead>
+  <tbody>${f.map(g=>`<tr class="click" data-game="${g.id}"><td class="num" style="white-space:nowrap">${fmtDate(g.date)}</td><td><b>${esc(g.champ)}</b> <span class="muted">vs ${esc(g.enemy||'?')}</span></td><td>${esc(g.role)}</td><td><span class="chip ${g.result.toLowerCase()}">${g.result}</span></td><td class="num">${g.k??'–'}/${g.d??'–'}/${g.a??'–'}</td><td class="num">${g.cs10??'–'}</td><td class="num" style="color:${g.lp>0?'var(--good)':g.lp<0?'var(--crit)':'inherit'}">${g.lp!=null?(g.lp>0?'+':'')+g.lp:'–'}</td><td><span class="dot" style="background:${['','var(--good)','var(--good)','var(--warn)','var(--crit)','var(--crit)'][g.tilt||1]}"></span> ${g.tilt||1}</td><td class="small">${esc(g.mistake)}</td><td class="small" style="max-width:280px">${esc(g.learning)}</td><td>${g.reviewed?'✓':''}</td></tr>`).join('')||`<tr><td colspan="11" class="muted">Keine Games gefunden</td></tr>`}</tbody></table></div></div>`;
+}
+function avg(list){const v=list.filter(x=>x!=null&&x!=='');return v.length?Math.round(v.reduce((a,b)=>a+Number(b),0)/v.length):null;}
+
+function vChamps(){
+ const c=S.champs.find(x=>x.id===sub);if(c)return vChampDetail(c);
+ const tiers=[['main','Main — damit klettere ich'],['backup','Backup — wenn Main gebannt/kontert'],['learn','Lernen — nur in Normals']];
+ return `<div class="head"><div class="title"><h1>Champions</h1><p>Kleiner Pool, tiefe Notizen. 1 Main + 1–2 Backups in <b>einer</b> Rolle reichen bis Master und darüber.</p></div><button class="btn primary" data-act="newChamp">+ Champion</button></div>
+ ${tiers.map(([t,l])=>{const list=S.champs.filter(x=>x.tier===t);return `<div class="panel flat" style="padding:0;border:0;margin-bottom:18px"><div class="eyebrow" style="margin-bottom:8px">${l}</div><div class="cards">${list.map(ch=>{const gs=S.games.filter(g=>g.champ===ch.name);const wr=winrate(gs);const filled=Object.values(ch.notes).filter(Boolean).length;return `<div class="card" data-champ="${ch.id}"><div class="row spread"><h3>${esc(ch.name)}</h3><span class="chip">${esc(ch.role)}</span></div><div class="meta num">${wr.n?`${wr.wr}% WR · ${wr.n} Games`:'Noch keine Games'}</div><div class="meta">${ch.matchups.length} Matchups · ${filled}/6 Notiz-Sektionen</div></div>`}).join('')||`<div class="empty" style="grid-column:1/-1">Leer</div>`}</div></div>`}).join('')}`;
+}
+const NOTE_SECTIONS=[['wincon','Wincondition','Wie gewinne ich mit diesem Champion? Was ist mein Spielplan in jeder Phase?'],['combos','Combos & Mechanics','Die 3–5 Combos, die ich blind können muss.'],['spikes','Power Spikes & Schwächen','Level, Items, Zeitpunkte, an denen ich stark oder schwach bin.'],['build','Runen & Build','Standard + Anpassungen gegen Assassins/Tanks/Poke.'],['waves','Wave-Plan','Standard-Pattern Lvl 1–3, vor Recall, vor Objectives.'],['dodont','Do / Don\'t','Regeln aus Reviews, die ich immer wieder breche.']];
+function vChampDetail(c){
+ const gs=S.games.filter(g=>g.champ===c.name);const wr=winrate(gs);
+ const muWR=e=>winrate(gs.filter(g=>g.enemy===e));
+ const tierName={main:'Main',backup:'Backup',learn:'Lernen'}[c.tier];
+ return `<div class="head"><div class="title"><button class="btn ghost sm" data-go="champs">← Alle Champions</button><h1 style="margin-top:6px">${esc(c.name)}</h1><p>${esc(c.role)} · ${tierName} · <span class="num">${wr.n?`${wr.wr}% WR über ${wr.n} Games`:'noch keine Games geloggt'}</span></p></div><div class="row"><button class="btn" data-act="editChamp">Bearbeiten</button><button class="btn primary" data-act="newMU">+ Matchup</button></div></div>
+ <div class="grid g32">
+  <div class="stack">
+   <div class="panel"><div class="ph"><h2>Matchups</h2><span class="small muted">${c.matchups.length} dokumentiert</span></div>
+    ${c.matchups.length?`<div class="stack">${[...c.matchups].sort((a,b)=>b.diff-a.diff).map(m=>{const w=muWR(m.enemy);return `<div class="goal"><div class="top"><div><h3>vs ${esc(m.enemy)}</h3><div class="small muted num">Schwierigkeit ${'●'.repeat(m.diff)}${'○'.repeat(5-m.diff)} ${w.n?`· ${w.wr}% WR (${w.n})`:''}</div></div><button class="btn ghost sm" data-mu="${m.id}">Bearbeiten</button></div>
+     <div class="kv">${m.lvl13?`<b>Lvl 1–3</b><span class="editable">${esc(m.lvl13)}</span>`:''}${m.laning?`<b>Laning</b><span class="editable">${esc(m.laning)}</span>`:''}${m.punish?`<b>Punish</b><span class="editable">${esc(m.punish)}</span>`:''}${m.notes?`<b>Notizen</b><span class="editable">${esc(m.notes)}</span>`:''}</div></div>`}).join('')}</div>`:`<div class="empty">Noch keine Matchups. Fang mit den 3 an, gegen die du am häufigsten verlierst.</div>`}
+   </div>
+  </div>
+  <div class="stack">${NOTE_SECTIONS.map(([k,l,ph])=>`<div class="panel section-note"><h3>${l}</h3><textarea class="inline-edit" data-note="${k}" placeholder="${esc(ph)}">${esc(c.notes[k]||'')}</textarea></div>`).join('')}</div>
+ </div>`;
+}
+
+function vZiele(){
+ const act=S.goals.filter(g=>g.status==='aktiv'),rest=S.goals.filter(g=>g.status!=='aktiv');
+ return `<div class="head"><div class="title"><h1>Lernziele</h1><p>Prozess-Ziele, die du messen kannst — nie „Diamond erreichen“. Max. 2 aktive Ziele, 1 davon als Fokus.</p></div><button class="btn primary" data-act="newGoal">+ Lernziel</button></div>
+ ${act.length>2?`<div class="banner"><span><b>${act.length} aktive Ziele.</b> Mehr als 2 gleichzeitig verwässern den Fokus — pausiere, was gerade nicht dran ist.</span></div>`:''}
+ <div class="grid g2">${act.map(g=>goalCard(g)).join('')||'<div class="empty" style="grid-column:1/-1">Kein aktives Ziel. Gute erste Ziele: „CS @ 10 ≥ 80“, „≤ 1 Tod vor 10:00“, „Ward vor jedem Objective“.</div>'}</div>
+ ${rest.length?`<hr class="sep"><div class="eyebrow" style="margin-bottom:8px">Erreicht & pausiert</div><div class="grid g2">${rest.map(g=>goalCard(g)).join('')}</div>`:''}
+ <div class="panel" style="margin-top:18px"><h2>Gute Ziele nach Rang</h2><div class="tw"><table><thead><tr><th>Bereich</th><th>Beispiel-Ziel</th><th>Messung</th></tr></thead><tbody>
+ <tr><td>Iron–Gold</td><td>CS @ 10 ≥ 70 · ≤ 2 Tode vor 15:00 · jeden Recall mit Wave-Crash</td><td>Match-Log CS@10 / Tode</td></tr>
+ <tr><td>Plat–Emerald</td><td>CS @ 10 ≥ 80 · Ward 1:00 vor jedem Objective · Tilt-Level Ø ≤ 2</td><td>Log + Review-Timestamps</td></tr>
+ <tr><td>Diamond+</td><td>Lvl-2-Race gewinnen in 8/10 Games · Recall-Timings ohne Wave-Verlust · 1 Review pro Session</td><td>Review-Einträge Phase „Lvl 1–3“</td></tr>
+ </tbody></table></div></div>`;
+}
+
+function vReview(){
+ const r=S.reviews.find(x=>x.id===sub);if(r)return vReviewDetail(r);
+ const list=[...S.reviews].sort((a,b)=>b.date.localeCompare(a.date));const unrev=sortGames().filter(g=>!g.reviewed&&g.result!=='Remake').slice(0,5);
+ return `<div class="head"><div class="title"><h1>Review</h1><p>Ein Game pro Session. Tode zuerst. Drei Fragen. Ein Takeaway. So wird aus Spielzeit Verbesserung.</p></div><button class="btn primary" data-act="newReview">+ Review starten</button></div>
+ <div class="grid g32">
+  <div class="stack">
+   <div class="panel"><h2>Meine Reviews</h2>${list.length?`<div class="stack">${list.map(r=>`<div class="card" data-review="${r.id}"><div class="row spread"><h3>${esc(r.title)}</h3><span class="small muted num">${fmtDate(r.date)}</span></div><div class="meta">${r.entries.length} Momente · ${r.takeaways.length} Takeaways</div>${r.takeaways[0]?`<div class="small">→ ${esc(r.takeaways[0])}</div>`:''}</div>`).join('')}</div>`:'<div class="empty">Noch kein Review.</div>'}</div>
+   ${unrev.length?`<div class="panel"><h2>Noch nicht reviewt</h2><div class="stack" style="gap:6px">${unrev.map(g=>`<div class="row spread"><span><span class="chip ${g.result.toLowerCase()}">${g.result[0]}</span> <b>${esc(g.champ)}</b> <span class="muted">vs ${esc(g.enemy||'?')} · ${fmtDate(g.date)}</span></span><button class="btn sm" data-revgame="${g.id}">Review</button></div>`).join('')}</div><div class="small muted" style="margin-top:8px">Tipp: Reviewe knappe Losses und Games mit hohem Tilt — da steckt am meisten drin. Stomps in beide Richtungen bringen wenig.</div></div>`:''}
+  </div>
+  <div class="panel"><h2>So reviewst du richtig</h2>
+   <details class="step" open><summary>1 · Vorbereitung (2 min)</summary><div class="body"><ul><li>Replay öffnen, <b>Fokus-Ziel</b> danebenlegen. Du suchst nicht „alles“, du suchst dein Thema.</li><li>Scoreboard ignorieren. Du bewertest Entscheidungen, nicht Ergebnisse.</li><li>Timer-Liste bereit: Grubs/Herald/Drake-Spawns notieren.</li></ul></div></details>
+   <details class="step"><summary>2 · Tode zuerst (10 min)</summary><div class="body"><p>Springe zu jedem eigenen Tod, <b>pausiere 10–15 s davor</b> und beantworte die drei Fragen:</p><div class="rule">1. Was ist passiert? (Fakten)<br>2. Welche Information hatte ich — oder hätte ich haben können? (Minimap, Cooldowns, fehlende Gegner, Wave-State)<br>3. Was wäre die bessere, <b>wiederholbare</b> Entscheidung gewesen?</div><p>„Ich hätte besser spielen sollen“ ist keine Antwort. „Ich recalle, sobald die Wave gecrasht ist und der Jungler Top gespottet wurde“ ist eine.</p></div></details>
+   <details class="step"><summary>3 · Erste 3 Minuten (5 min)</summary><div class="body"><ul><li>Lvl-1-Setup: War ich rechtzeitig auf der Lane? Wave-Zählen fürs Lvl-2-Race (7 Minions Solo-Lane, 9 in der Bot-Lane).</li><li>Erste Trades: Warum genommen? Wer hatte mehr Minions?</li><li>Erster Recall: Nach Crash? Mit wie viel Gold?</li></ul></div></details>
+   <details class="step"><summary>4 · Objective-Timer (5 min)</summary><div class="body"><p>Spule zu <b>1:00 vor jedem Objective-Spawn</b> und friere das Bild ein:</p><ul><li>Wo ist meine Wave? (Sollte gerade crashen oder slow-pushen.)</li><li>Steht ein Ward zwischen Gegner und Objective?</li><li>Weiß ich, wo der gegnerische Jungler ist?</li></ul></div></details>
+   <details class="step"><summary>5 · Ein Takeaway (2 min)</summary><div class="body"><p>Schreib <b>maximal einen</b> Satz auf, der sich in allen Toden wiederholt hat. Wenn dieser Satz zwei Wochen lang derselbe ist → wird er dein Lernziel. Nicht 5 Takeaways. Einer, den du morgen umsetzen kannst.</p></div></details>
+   <details class="step"><summary>Wann NICHT reviewen</summary><div class="body"><ul><li>Direkt nach einem Tilt-Game — mindestens 20 min warten.</li><li>Stomps (in beide Richtungen) — wenig Signal.</li><li>Games, in denen du „nur“ Teammates analysieren willst — du kannst nur dich ändern.</li></ul></div></details>
+  </div>
+ </div>`;
+}
+function vReviewDetail(r){
+ const g=S.games.find(x=>x.id===r.gameId);
+ return `<div class="head"><div class="title"><button class="btn ghost sm" data-go="review">← Alle Reviews</button><h1 style="margin-top:6px">${esc(r.title)}</h1><p class="num">${fmtDate(r.date)}${g?` · ${esc(g.champ)} vs ${esc(g.enemy||'?')} · ${g.k}/${g.d}/${g.a} · CS@10 ${g.cs10??'–'}`:''}</p></div><div class="row"><button class="btn" data-act="editReview">Bearbeiten</button><button class="btn primary" data-act="newEntry">+ Moment</button></div></div>
+ <div class="grid g32">
+  <div class="panel"><div class="ph"><h2>Momente</h2><span class="small muted">Tode zuerst, dann Objective-Setups</span></div>
+   ${r.entries.length?`<div class="stack">${r.entries.map(e=>`<div class="goal"><div class="top"><div class="row"><span class="chip gold num">${esc(e.time||'–:––')}</span><span class="chip">${esc(e.phase)}</span></div><button class="btn ghost sm" data-entry="${e.id}">Bearbeiten</button></div><div class="kv">${e.what?`<b>Was</b><span class="editable">${esc(e.what)}</span>`:''}${e.why?`<b>Warum</b><span class="editable">${esc(e.why)}</span>`:''}${e.better?`<b>Besser</b><span class="editable" style="color:var(--teal2)">${esc(e.better)}</span>`:''}</div></div>`).join('')}</div>`:`<div class="empty">Springe im Replay zu deinem ersten Tod und drücke „+ Moment“.</div>`}
+  </div>
+  <div class="stack">
+   <div class="panel"><h2>Takeaways</h2><div class="stack" style="gap:6px">${r.takeaways.map((t,i)=>`<div class="row spread" style="align-items:flex-start"><span>→ ${esc(t)}</span><span class="row" style="gap:4px;flex:none"><button class="btn sm" data-tk2goal="${i}" title="Als Lernziel anlegen">→ Ziel</button><button class="btn ghost sm" data-tkdel="${i}" aria-label="Löschen">×</button></span></div>`).join('')||'<div class="muted small">Noch kein Takeaway.</div>'}</div>
+    <form id="tkForm" class="row" style="margin-top:10px;flex-wrap:nowrap"><input id="tkInput" placeholder="Ein Satz, den ich morgen umsetzen kann" required><button class="btn sm" type="submit">Hinzufügen</button></form>
+    <div class="small muted" style="margin-top:8px">Ein Takeaway, das 2 Wochen lang wiederkehrt, wird per „→ Ziel“ zum Lernziel.</div></div>
+   <div class="panel"><h2>Die drei Fragen</h2><div class="rule small">1. Was ist passiert?<br>2. Welche Info hatte ich / hätte ich haben können?<br>3. Bessere, wiederholbare Entscheidung?</div></div>
+  </div>
+ </div>`;
+}
+
+function vWoche(){
+ const wk=sub&&sub.week?sub.week:weekKey(ld());const ws=weekStartFromKey(wk);const days=[...Array(7)].map((_,i)=>addDays(ws,i));
+ const games=S.games.filter(g=>days.includes(g.date));const wr=winrate(games);const lpSum=games.reduce((a,g)=>a+(g.lp||0),0);const rev=games.filter(g=>g.reviewed).length;const ms=mistakeStats(games);const tilt=avg(games.map(g=>g.tilt));
+ const rp=Math.round(days.filter(d=>d<=ld()).reduce((a,d)=>a+routinePct(d),0)/Math.max(1,days.filter(d=>d<=ld()).length));
+ const w=S.weekly.find(x=>x.week===wk);const prev=weekKey(addDays(ws,-1)),next=weekKey(addDays(ws,7));
+ const past=[...S.weekly].filter(x=>x.week!==wk).sort((a,b)=>b.week.localeCompare(a.week));
+ return `<div class="head"><div class="title"><h1>Wochen-Review</h1><p>Sonntag, 15 Minuten. Zahlen anschauen, Muster benennen, <b>eine</b> Sache für nächste Woche wählen.</p></div>
+  <div class="row"><button class="btn sm" data-week="${prev}">← ${prev}</button><span class="chip gold">${wk}</span><button class="btn sm" data-week="${next}" ${next>weekKey(ld())?'disabled':''}>${next} →</button></div></div>
+ <div class="small muted" style="margin:-10px 0 14px">${fmtDate(days[0])} – ${fmtDate(days[6])}</div>
+ <div class="tiles" style="margin-bottom:16px">
+  <div class="tile"><div class="lbl">Games</div><div class="val">${games.length}</div><div class="sub num">${wr.w}W ${wr.n-wr.w}L · ${wr.n?wr.wr+'%':'–'}</div></div>
+  <div class="tile"><div class="lbl">LP netto</div><div class="val" style="color:${lpSum>0?'var(--good)':lpSum<0?'var(--crit)':'inherit'}">${lpSum>0?'+':''}${lpSum}</div><div class="sub">aus geloggten Games</div></div>
+  <div class="tile"><div class="lbl">Reviews</div><div class="val">${rev}</div><div class="sub">von ${games.length} Games</div></div>
+  <div class="tile"><div class="lbl">Routine · Ø Tilt</div><div class="val num">${rp}% <span style="font-size:1rem;color:var(--muted)">· ${tilt??'–'}</span></div><div class="sub">Tilt 1 ruhig – 5 tilted</div></div>
+ </div>
+ <div class="grid g32">
+  <div class="stack">
+   <div class="panel"><div class="ph"><h2>Reflexion ${wk}</h2><button class="btn ${w?'':'primary'} sm" data-act="weekly">${w?'Bearbeiten':'Ausfüllen'}</button></div>
+    ${w?`<div class="kv" style="gap:10px 14px"><b>Gut</b><span class="editable">${esc(w.good)||'–'}</span><b>Muster</b><span class="editable">${esc(w.bad)||'–'}</span><b>Fokus</b><span class="editable" style="color:var(--gold2)">${esc(w.focus)||'–'}</span><b>Mental</b><span class="editable">${esc(w.mental)||'–'}</span></div>`:`<div class="empty">Noch nicht ausgefüllt. Vier Fragen, 10 Minuten.</div>`}</div>
+   ${past.length?`<div class="panel"><h2>Frühere Wochen</h2><div class="stack">${past.map(x=>`<div class="card" data-week="${x.week}"><div class="row spread"><h3>${x.week}</h3></div><div class="small">Fokus: <span style="color:var(--gold2)">${esc(x.focus)||'–'}</span></div></div>`).join('')}</div></div>`:''}
+  </div>
+  <div class="stack">
+   <div class="panel"><h2>Fehler dieser Woche</h2>${ms.length?`<div class="stack" style="gap:8px">${ms.slice(0,5).map(m=>`<div><div class="row spread small"><span>${esc(m.k)}</span><span class="num muted">${m.n}×</span></div><div class="bar"><i style="width:${pct(m.n,ms[0].n)}%"></i></div></div>`).join('')}</div><div class="small muted" style="margin-top:10px">Steht <b style="color:var(--ink)">${esc(ms[0].k)}</b> zum zweiten Mal oben? Dann ist das dein Fokus — nicht der Champion, nicht die Teammates.</div>`:'<div class="muted small">Keine Fehler getaggt.</div>'}</div>
+   <div class="panel"><h2>Leitfragen</h2><ul class="small" style="padding-left:18px;margin:0;color:var(--ink2)"><li>Habe ich Stop-Loss eingehalten? Wenn nein: Was war der Trigger?</li><li>Welcher Fehler-Tag taucht in Losses <i>und</i> Wins auf? (Der ist echt.)</li><li>Hat mein Fokus-Ziel sich in den Zahlen gezeigt? (CS, Tode, Review-Quote)</li><li>Was streiche ich nächste Woche? (Ein Champion, eine Uhrzeit, eine Gewohnheit)</li></ul></div>
+  </div>
+ </div>`;
+}
+function weekStartFromKey(k){const [y,w]=k.split('-W').map(Number);const jan4=new Date(y,0,4);const day=(jan4.getDay()+6)%7;const mon=new Date(jan4);mon.setDate(jan4.getDate()-day+(w-1)*7);return ld(mon);}
+
+const KNOWLEDGE=[
+ {t:'Wave Management — die Grundlage von allem',tags:'waves laning',h:`<p>Die Wave entscheidet, <b>wo</b> der Fight stattfindet und <b>wer</b> zuerst zurück ist. Wer die Wave kontrolliert, kontrolliert die Lane — unabhängig vom Matchup.</p>
+ <ul><li><b>Slow Push</b> (2–4 Minions mehr als der Gegner): Die Wave wächst und crasht später groß. Aufbauen <b>vor</b> Objectives und Roams — der Gegner muss die Wave nehmen, während du weg bist.</li>
+ <li><b>Fast Push</b> (alle Minions schnell killen): Crasht sofort. Für Recall-Timings und Prio bei Objectives — der Gegner muss unter Turm farmen.</li>
+ <li><b>Freeze</b> (3–4 gegnerische Minions mehr, knapp außerhalb deiner Turm-Range): Nur Last-Hits, kein Auto zwischendurch. Gegner muss überextenden oder XP verlieren. Stark, wenn du ahead bist oder der Gegner Roam-Druck hat.</li>
+ <li><b>Bounce</b>: Große Wave crasht in den gegnerischen Turm → die nächste Wave kommt zu <b>dir</b> zurück. Perfekter Moment für Recall.</li></ul>
+ <div class="rule">Regel: <b>Nie recallen, während eine Wave in dich hinein slow-pusht.</b> Erst crashen (oder die Wave sterben lassen), dann recall. Sonst verlierst du 1–2 Wellen + XP und der Gegner bekommt Prio umsonst.</div>
+ <p><b>Lvl-2-Race:</b> Solo-Lane erreicht Lvl 2 mit dem 7. Minion (1. Wave + 1 Melee der 2.), Bot-Lane mit dem 9. Minion (1. Wave + 3 Melees). Wer zuerst Lvl 2 hat, gewinnt den ersten Trade fast immer. Zähl mit — und weiche zurück, wenn du das Race verlierst.</p>
+ <p><b>Cannon-Waves</b> (jede 3., später jede 2.) sind deine natürlichen Crash- und Recall-Marker.</p>`},
+ {t:'Trading — wann darf ich tauschen?',tags:'trading laning',h:`<p>Ein Trade ist dann gut, wenn du <b>vorher</b> weißt, warum du ihn gewinnst. Vier Fragen vor jedem Trade:</p>
+ <ul><li><b>Minions:</b> Wer hat mehr? Jeder Minion ist ein kleiner Champion, der auf dich schießt.</li><li><b>Cooldowns:</b> Hat der Gegner gerade seine Kern-Ability (Charm, Chains, Dash) benutzt? Dann hast du ein Fenster von 5–12 s.</li><li><b>Level:</b> Lvl-Vorsprung = fast immer Trade-Vorsprung.</li><li><b>Summoners / Jungler:</b> Wo ist der Jungler? Habe ich Flash?</li></ul>
+ <p><b>Short Trade:</b> Eine Rotation, dann raus — gut für Ranged vs Melee, oder wenn deine Cooldowns kürzer sind. <b>Extended Trade:</b> Nur wenn du Sustain, Stats oder Wave-Vorteil hast.</p>
+ <div class="rule">Das häufigste Muster in Reviews unter Diamond: <b>Trades ohne Grund.</b> Der Gegner steppt vor, du steppst mit, beide verlieren HP, und derjenige mit dem besseren Jungler gewinnt. Trade nur, wenn du eine der vier Fragen mit „Vorteil“ beantworten kannst.</div>
+ <p><b>Punish-Fenster:</b> Der Gegner benutzt eine Ability für CS → du hast Zeit für eine freie Rotation. Der Gegner steppt vor für einen Last-Hit → Auto-Attack + Ability, dann zurück.</p>`},
+ {t:'Tempo & Recall-Timing',tags:'macro tempo recall',h:`<p><b>Tempo</b> = Zeit, in der du etwas Sinnvolles tust, während der Gegner es nicht kann. Recall-Timings sind die wichtigste Tempo-Quelle in der Laning-Phase.</p>
+ <ul><li><b>Perfekter Recall:</b> Wave crasht in den gegnerischen Turm → Recall → du bist zurück, bevor die nächste Wave dein Turm-Range erreicht. Der Gegner verliert nichts, du gewinnst Items ohne Wave-Verlust.</li><li><b>Guter Recall:</b> Du hast 1.000+ Gold für ein Item-Upgrade <b>und</b> die Wave ist gecrasht oder bounced zu dir.</li><li><b>Schlechter Recall:</b> Gegner hat gerade recallt → du recallst mit → beide verschwenden Zeit. Besser: Wave crashen, dann eine Wave später gehen.</li></ul>
+ <p><b>Teleport:</b> Nach einem schlechten Recall ist TP zurück auf die Lane oft richtig, um die Wave zu retten. Ab Mid Game: TP für Sidelane-Flanks und Objective-Fights.</p>
+ <div class="rule">Wenn der Gegner recallt und du nicht: <b>Wave crashen, dann Ward setzen, dann recall.</b> Nie einfach stehen bleiben und farmen — das ist verschenktes Tempo.</div>`},
+ {t:'Objectives & Timer',tags:'objectives macro',h:`<p>Objectives gewinnen Games — aber nur, wenn das Setup 60–90 Sekunden <b>vorher</b> beginnt. Ein Fight am Objective ist die Folge des Setups, nicht der Plan.</p>
+ <div class="tw"><table><thead><tr><th>Objective</th><th>Spawn</th><th>Respawn</th><th>Setup ab</th></tr></thead><tbody>
+ <tr><td>Drache</td><td>5:00</td><td>5:00 nach Tod</td><td>~3:45 / T−1:15</td></tr>
+ <tr><td>Void Grubs</td><td>8:00</td><td>2. Spawn nach dem 1. Clear (bis 13:45)</td><td>~6:45</td></tr>
+ <tr><td>Rift Herald</td><td>14:00</td><td>–</td><td>~12:45</td></tr>
+ <tr><td>Baron Nashor</td><td>20:00</td><td>6:00 nach Tod</td><td>~18:45</td></tr>
+ <tr><td>Atakhan</td><td>20:00</td><td>–</td><td>~18:45</td></tr>
+ <tr><td>Elder Drake</td><td>nach Soul (6:00)</td><td>6:00</td><td>T−1:15</td></tr></tbody></table></div>
+ <p class="small muted">Stand Season 2026 — Timer je Patch prüfen, das Prinzip bleibt.</p>
+ <p><b>Setup-Checkliste (T−1:15):</b></p><ul><li>Wave <b>crashen</b> oder slow-pushen, damit du Prio hast und der Gegner nicht.</li><li>Ward zwischen gegnerischem Jungle-Eingang und Objective, Sweeper bereit.</li><li>Wissen, wo der gegnerische Jungler ist — oder annehmen, dass er da ist.</li><li>Wenn du keine Prio hast: <b>Lane pushen statt zum Objective laufen.</b> Ein Turm oder 2 Wellen sind ein fairer Tausch.</li></ul>
+ <div class="rule">Der zweithäufigste Review-Fund: Spieler laufen bei 4:45 zum Drache-Pit, obwohl ihre Wave gerade in den eigenen Turm läuft. Sie verlieren die Wave <i>und</i> haben keinen Einfluss auf den Fight. Erst Wave, dann Objective.</div>`},
+ {t:'Vision — Wards, die etwas tun',tags:'vision',h:`<ul><li><b>Ward-Timing folgt der Wave:</b> Ward setzen, wenn deine Wave crasht und du kurz Zeit hast — nicht, wenn eine Wave in dich pusht.</li><li><b>Vor Objectives (T−1:00):</b> Ward am gegnerischen Eingang zum Pit, Control Ward im River-Bush.</li><li><b>Sweeper</b> ab dem ersten Recall auf Lanes mit Roam-Druck; vor jedem Objective den Pit sweepen.</li><li><b>Deep Wards</b> nur mit Prio und Wissen, wo der Jungler ist. Ein Ward, für den du stirbst, ist ein Negativ-Ward.</li></ul>
+ <div class="rule">Frage bei jedem Ward: <b>Welche Entscheidung ändert dieser Ward?</b> Ein Ward, der dir nicht sagt „jetzt darf ich pushen“ oder „jetzt muss ich weg“, ist Deko.</div>`},
+ {t:'Macro & Sidelane — nach der Laning-Phase',tags:'macro sidelane midgame',h:`<p>Ab ~14:00 gewinnt, wer weiß, wo er hin muss <b>bevor</b> etwas passiert.</p>
+ <ul><li><b>Sidelane</b> wenn: kein Objective in den nächsten 60 s, du hast TP oder Escape, dein Team kann 4v4 überleben, und die Wave dort ist gerade in dich gelaufen (du kannst sie shoven).</li><li><b>Gruppieren</b> wenn: Objective in &lt; 60 s, Gegner sind gruppiert und du hast Wave-Vorteil, oder ein Teamfight-Champion (Ori, Malphite…) den Fight braucht.</li><li><b>1-3-1 / 1-4:</b> Der Splitpusher braucht Waves und Vision, das Team braucht Prio in Mid. Wenn beides fehlt, reset und neu aufstellen.</li><li><b>Death Timers:</b> Ab 25:00 bedeutet ein Tod 30–50 s — das ist ein Baron. Zähle Tode als Zeit, nicht als KDA.</li></ul>
+ <div class="rule">Nach Baron / großem Vorteil: <b>nicht in den Gegner-Jungle laufen.</b> Waves pushen, Vision am gegnerischen Base-Eingang, dann Turm. Throws passieren, wenn der Vorteil in Gier umschlägt.</div>
+ <p><b>Wenn du behind bist:</b> Fights vermeiden, Waves nehmen, auf Gegner-Fehler warten (sie werden gierig). Ein Game bei 10k Gold Rückstand ist verloren; ein Game bei 4k mit Scaling-Comp nicht.</p>`},
+ {t:'Mental & Session-Regeln',tags:'mental tilt',h:`<p>Zwei Spieler mit identischem Skill: Der, der nach Loss 2 aufhört, klettert. Der, der nach Loss 3 „LP zurückholt“, fällt. Das ist der ganze Unterschied.</p>
+ <ul><li><b>Stop-Loss:</b> 2 Losses in Folge → 10 min Pause. 3 in Folge → Session zu Ende. Ohne Ausnahme, auch wenn „das letzte nicht mein Fehler war“.</li><li><b>Prozess statt Ergebnis:</b> Vor jedem Game ein Prozess-Ziel („Recall nur nach Crash“). Danach bewertest du <i>das</i>, nicht das W/L.</li><li><b>Kein Chat.</b> Pings und Timer. Jede Zeile Chat ist ein Fenster ohne Minimap.</li><li><b>Schlaf schlägt Spielzeit.</b> 3 Games ausgeruht &gt; 8 Games müde. Kein Ranked nach 1 Uhr, wenn du am nächsten Tag funktionieren musst.</li><li><b>Tilt-Level ehrlich loggen.</b> Wenn dein Ø über eine Woche &gt; 2,5 ist, ist Mental dein Lernziel — nicht Mechanics.</li></ul>
+ <div class="rule">Du kannst Teammates nicht ändern. Du kannst Matchmaking nicht ändern. Du kannst genau eines ändern: <b>deine nächste Entscheidung.</b> Reviews, die über Teammates gehen, sind Zeitverschwendung.</div>`},
+ {t:'Champion-Pool — so klein wie möglich',tags:'pool champions',h:`<ul><li><b>1 Rolle.</b> Autofill ist kein Grund, eine zweite Rolle zu lernen — nimm einen einfachen Champ und spiel safe.</li><li><b>1 Main + 1–2 Backups.</b> Backups decken Bans und harte Konter ab. Mehr als 3 Champions verteilen deine Reps.</li><li><b>OTP funktioniert</b> bis Master und darüber. Matchup-Wissen und Muscle Memory schlagen Counterpicks.</li><li><b>Neuer Champion:</b> ≥ 20 Normals, bevor er in Ranked kommt. Erst wenn du die Combos blind kannst und 3 Matchups dokumentiert hast.</li><li><b>Champ wechseln?</b> Nur bei &lt; 45 % WR über 50+ Games <i>und</i> wenn der Review zeigt, dass es am Champion liegt (fast nie).</li></ul>
+ <div class="rule">Wenn du weniger als 30 Games auf deinem Main in dieser Season hast, ist dein Problem nicht der Champion.</div>`},
+ {t:'Practice-Tool-Drills (10 Minuten täglich)',tags:'practice drills mechanics',h:`<ul><li><b>CS-Drill:</b> 10 Minuten farmen, kein Gegner, keine Abilities für Farm außer wenn nötig. Ziel: ≥ 80 CS (Ranged) / ≥ 75 (Melee). Loggst du im Lernziel.</li><li><b>Combo-Reps:</b> Jede Kern-Combo 20× sauber. Mit Flash. Mit Bewegung. Dann gegen einen Dummy mit Bewegung.</li><li><b>Wave-Drill:</b> Freeze aufbauen (3–4 Minions mehr) und 3 Waves halten. Dann Slow Push aufbauen und exakt zur nächsten Cannon crashen.</li><li><b>Range-Drill:</b> Max-Range deiner Hauptability gegen Dummy — 10 Casts am Rand der Reichweite. Verändert dein Spacing im Game sofort.</li><li><b>Kite-Drill (ADC):</b> Attack-Move-Klicks auf Dummy, während du rückwärts läufst, 2 Minuten.</li></ul>`},
+ {t:'Richtig reviewen — Kurzfassung',tags:'review vod',h:`<p>Die vollständige Anleitung liegt im <b>Review</b>-Tab. Kurzfassung:</p><ul><li>Ein Game pro Session. Knappe Losses und High-Tilt-Games zuerst.</li><li>Zu jedem Tod: 10–15 s vorher pausieren. Drei Fragen. Wiederholbare Antwort.</li><li>Erste 3 Minuten und T−1:00 vor jedem Objective anschauen.</li><li><b>Ein</b> Takeaway. Wiederholt er sich 2 Wochen → Lernziel.</li><li>Nie Teammates reviewen. Nur dich.</li></ul>`},
+ {t:'Was Challenger anders macht (und was nicht)',tags:'mindset challenger',h:`<p>Es ist nicht Mechanik. Über Diamond können alle ihre Champions. Der Unterschied ist <b>Konsistenz in Entscheidungen, die man nicht sieht:</b></p>
+ <ul><li>Sie wissen 30 Sekunden vor einem Objective, wo ihre Wave sein muss — und stellen das her.</li><li>Sie nehmen fast nie einen Trade, dessen Ausgang sie nicht vorher kennen.</li><li>Sie sterben in der Laning-Phase 0–1 Mal, nicht weil sie besser dodgen, sondern weil sie seltener in Situationen stehen, in denen Dodgen nötig wäre.</li><li>Sie loggen keine LP. Sie loggen Muster. LP ist Rauschen über 20 Games und Signal über 200.</li><li>Sie spielen 1–2 Champions und 1 Rolle — seit Jahren.</li></ul>
+ <div class="rule">Was du <b>heute</b> übernehmen kannst: Wave-Zustand vor jedem Objective prüfen. Ein Prozess-Ziel pro Game. Stop-Loss. Ein Review pro Session. Der Rest kommt mit den Reps.</div>`}
+];
+function vWissen(){
+ const q=(sub&&sub.q)||'';const list=KNOWLEDGE.filter(k=>!q||(k.t+' '+k.tags+' '+k.h).toLowerCase().includes(q.toLowerCase()));
+ return `<div class="head"><div class="title"><h1>Wissen</h1><p>Die Fundamentals, die zwischen Iron und Challenger identisch bleiben — als Nachschlagewerk vor der Session und beim Review.</p></div><input class="search" id="knowSearch" placeholder="Suchen: Freeze, Baron, Tilt …" value="${esc(q)}"></div>
+ ${list.map((k,i)=>`<details ${i===0&&!q?'open':''}><summary>${k.t}</summary><div class="body">${k.h}</div></details>`).join('')||'<div class="empty">Nichts gefunden.</div>'}`;
+}
+
+function vNotizen(){
+ const q=(sub&&sub.q)||'';const tag=sub&&sub.tag;const all=[...S.notes].sort((a,b)=>b.date.localeCompare(a.date));
+ const tags=[...new Set(S.notes.flatMap(n=>n.tags))].sort();
+ const list=all.filter(n=>(!q||(n.title+' '+n.body).toLowerCase().includes(q.toLowerCase()))&&(!tag||n.tags.includes(tag)));
+ return `<div class="head"><div class="title"><h1>Notizen</h1><p>Coaching-Sätze, Video-Learnings, Ideen für Lernziele. Alles, was nicht zu einem Champion oder Game gehört.</p></div><div class="row"><input class="search" id="noteSearch" placeholder="Suchen …" value="${esc(q)}"><button class="btn primary" data-act="newNote">+ Notiz</button></div></div>
+ ${tags.length?`<div class="row" style="margin-bottom:14px"><button class="chip ${!tag?'gold':''}" data-tag="" style="cursor:pointer">alle</button>${tags.map(t=>`<button class="chip ${tag===t?'gold':''}" data-tag="${esc(t)}" style="cursor:pointer">#${esc(t)}</button>`).join('')}</div>`:''}
+ <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${list.map(n=>`<div class="card" data-note="${n.id}"><div class="row spread"><h3>${esc(n.title)}</h3><span class="small muted num">${fmtDate(n.date)}</span></div><div class="editable small" style="max-height:120px;overflow:hidden">${esc(n.body)}</div>${n.tags.length?`<div class="row" style="gap:4px">${n.tags.map(t=>`<span class="chip">#${esc(t)}</span>`).join('')}</div>`:''}</div>`).join('')||'<div class="empty" style="grid-column:1/-1">Keine Notizen.</div>'}</div>`;
+}
+
+function vDaten(){
+ const size=(()=>{try{return Math.round((localStorage.getItem(KEY)||'').length/1024)}catch(e){return 0}})();
+ return `<div class="head"><div class="title"><h1>Daten</h1><p>Alles liegt lokal in diesem Browser. Exportiere regelmäßig — ein neuer Browser oder gelöschte Website-Daten bedeuten sonst Verlust.</p></div></div>
+ <div class="grid g2">
+  <div class="panel"><h2>Export</h2><p class="small muted">Kopiere das JSON und speichere es als Datei (z. B. <code>climb-journal.json</code>). Aktuell ${size} KB · ${S.games.length} Games · ${S.champs.length} Champions · ${S.reviews.length} Reviews.</p><textarea id="exportBox" readonly style="min-height:160px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem"></textarea><div class="row" style="margin-top:8px"><button class="btn" data-act="export">JSON erzeugen</button><button class="btn" data-act="copyExport">Kopieren</button><a class="btn" id="dlLink" download="climb-journal.json" hidden>Als Datei speichern</a></div></div>
+  <div class="panel"><h2>Import</h2><p class="small muted">JSON hier einfügen. Ersetzt den aktuellen Stand komplett — vorher exportieren.</p><textarea id="importBox" placeholder='{"version":1, …}' style="min-height:160px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem"></textarea><div class="row" style="margin-top:8px"><button class="btn primary" data-act="import">Importieren</button><label class="btn" for="importFile">Datei wählen</label><input type="file" id="importFile" accept="application/json,.json" hidden></div></div>
+  <div class="panel"><h2>Beispieldaten</h2><p class="small muted">${S.sample?'Das Tool zeigt aktuell Beispieldaten (Orianna-Main, Emerald II). Entfernen setzt Games, Champions, Ziele, Reviews und Notizen zurück — die Standard-Routine und das Wissen bleiben.':'Keine Beispieldaten aktiv.'}</p>${S.sample?'<button class="btn danger" data-act="clearSample">Beispieldaten entfernen & frisch starten</button>':''}</div>
+  <div class="panel"><h2>Zurücksetzen</h2><p class="small muted">Löscht alles und lädt die Beispieldaten neu.</p><button class="btn danger" data-act="reset">Alles zurücksetzen</button></div>
+ </div>`;
+}
+
+/* ---------- render & events ---------- */
+function render(){
+ renderNav();
+ const m=$('#main');
+ const fn={heute:vHeute,routine:vRoutine,games:vGames,champs:vChamps,ziele:vZiele,review:vReview,woche:vWoche,wissen:vWissen,notizen:vNotizen,daten:vDaten}[view]||vHeute;
+ m.innerHTML=fn();
+ bindChart();
+ const gs=$('#gameSearch');if(gs){gs.addEventListener('input',e=>{sub={q:e.target.value};const tb=$('#main tbody');const rows=vGames();const tmp=document.createElement('div');tmp.innerHTML=rows;tb.innerHTML=$('tbody',tmp).innerHTML;});}
+ const ks=$('#knowSearch');if(ks){ks.addEventListener('input',e=>{sub={q:e.target.value};const pos=e.target.selectionStart;render();const k=$('#knowSearch');k.focus();k.setSelectionRange(pos,pos);});}
+ const ns=$('#noteSearch');if(ns){ns.addEventListener('input',e=>{sub={...(sub||{}),q:e.target.value};const pos=e.target.selectionStart;render();const k=$('#noteSearch');k.focus();k.setSelectionRange(pos,pos);});}
+ const tk=$('#tkForm');if(tk){tk.addEventListener('submit',e=>{e.preventDefault();const r=S.reviews.find(x=>x.id===sub);const v=$('#tkInput').value.trim();if(r&&v){r.takeaways.push(v);save();render();}});}
+ $$('textarea[data-note]').forEach(t=>t.addEventListener('blur',e=>{const c=S.champs.find(x=>x.id===sub);if(c){c.notes[e.target.dataset.note]=e.target.value;save();toast('Notiz gespeichert');}}));
+ const imf=$('#importFile');if(imf)imf.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{$('#importBox').value=rd.result;doImport();};rd.readAsText(f);});
+}
+function doImport(){
+ try{const o=JSON.parse($('#importBox').value);if(!o||!Array.isArray(o.games)||!o.routine)throw 0;if(!confirm('Aktuellen Stand durch Import ersetzen?'))return;S=o;S.sample=false;save();render();toast('Importiert');}catch(e){toast('Ungültiges JSON');}
+}
+document.addEventListener('click',e=>{
+ const t=e.target.closest('[data-go],[data-act],[data-rtadd],[data-rtedit],[data-game],[data-champ],[data-mu],[data-goal],[data-review],[data-revgame],[data-entry],[data-tk2goal],[data-tkdel],[data-week],[data-note],[data-tag]');
+ if(!t)return;
+ if(t.dataset.go!=null){go(t.dataset.go);return;}
+ if(t.dataset.rtadd){routineItemForm(S.routine.phases.find(p=>p.id===t.dataset.rtadd));return;}
+ if(t.dataset.rtedit){const [pid,iid]=t.dataset.rtedit.split(':');const p=S.routine.phases.find(x=>x.id===pid);routineItemForm(p,p.items.find(i=>i.id===iid));return;}
+ if(t.dataset.game){gameForm(S.games.find(g=>g.id===t.dataset.game));return;}
+ if(t.dataset.champ){go('champs',t.dataset.champ);return;}
+ if(t.dataset.mu){const c=S.champs.find(x=>x.id===sub);matchupForm(c,c.matchups.find(m=>m.id===t.dataset.mu));return;}
+ if(t.dataset.goal){goalForm(S.goals.find(g=>g.id===t.dataset.goal));return;}
+ if(t.dataset.review){go('review',t.dataset.review);return;}
+ if(t.dataset.revgame){const g=S.games.find(x=>x.id===t.dataset.revgame);const n={id:uid(),date:ld(),gameId:g.id,title:`${g.champ} vs ${g.enemy||'?'} — ${g.result}${g.lp!=null?` (${g.lp>0?'+':''}${g.lp})`:''}`,entries:[],takeaways:[]};g.reviewed=true;S.reviews.push(n);save();go('review',n.id);return;}
+ if(t.dataset.entry){const r=S.reviews.find(x=>x.id===sub);entryForm(r,r.entries.find(x=>x.id===t.dataset.entry));return;}
+ if(t.dataset.tk2goal!=null){const r=S.reviews.find(x=>x.id===sub);const tkw=r.takeaways[Number(t.dataset.tk2goal)];goalForm(null);setTimeout(()=>{$('#fld-title').value=tkw;$('#fld-notes').value=`Aus Review „${r.title}“ (${fmtDate(r.date)}).`;},0);return;}
+ if(t.dataset.tkdel!=null){const r=S.reviews.find(x=>x.id===sub);r.takeaways.splice(Number(t.dataset.tkdel),1);save();render();return;}
+ if(t.dataset.week!=null){if(t.disabled)return;go('woche',{week:t.dataset.week});return;}
+ if(t.dataset.note){noteForm(S.notes.find(n=>n.id===t.dataset.note));return;}
+ if(t.dataset.tag!=null){sub={...(sub||{}),tag:t.dataset.tag||null};render();return;}
+ const a=t.dataset.act;
+ if(a==='newGame')gameForm();
+ else if(a==='profile')profileForm();
+ else if(a==='newGoal')goalForm();
+ else if(a==='newChamp')champForm();
+ else if(a==='editChamp')champForm(S.champs.find(x=>x.id===sub));
+ else if(a==='newMU')matchupForm(S.champs.find(x=>x.id===sub));
+ else if(a==='newReview')reviewForm();
+ else if(a==='editReview')reviewForm(S.reviews.find(x=>x.id===sub));
+ else if(a==='newEntry')entryForm(S.reviews.find(x=>x.id===sub));
+ else if(a==='weekly'){const wk=sub&&sub.week?sub.week:weekKey(ld());weeklyForm(wk,S.weekly.find(x=>x.week===wk));}
+ else if(a==='newNote')noteForm();
+ else if(a==='resetRoutine'){if(confirm('Routine-Punkte auf Standard zurücksetzen? Der Verlauf bleibt.')){const log=S.routine.log;S.routine=defaultRoutine();S.routine.log=log;save();render();}}
+ else if(a==='export'){const j=JSON.stringify(S,null,1);$('#exportBox').value=j;const l=$('#dlLink');try{l.href=URL.createObjectURL(new Blob([j],{type:'application/json'}));l.hidden=false;}catch(e){}}
+ else if(a==='copyExport'){const b=$('#exportBox');if(!b.value)b.value=JSON.stringify(S,null,1);b.select();try{navigator.clipboard.writeText(b.value).then(()=>toast('Kopiert'),()=>document.execCommand('copy'));}catch(e){document.execCommand('copy');toast('Kopiert');}}
+ else if(a==='import')doImport();
+ else if(a==='clearSample'){if(confirm('Beispieldaten entfernen? Routine-Struktur und Wissen bleiben.')){S=emptyState();save();go('heute');toast('Frischer Start');}}
+ else if(a==='reset'){if(confirm('Wirklich alles löschen?')){S=sampleState();save();go('heute');}}
+});
+document.addEventListener('change',e=>{
+ const cb=e.target.closest('input[data-rt]');if(!cb)return;const t=ld();S.routine.log[t]=S.routine.log[t]||{};if(cb.checked)S.routine.log[t][cb.dataset.rt]=1;else delete S.routine.log[t][cb.dataset.rt];save();
+ cb.closest('.check').classList.toggle('done',cb.checked);
+ const rp=routinePct(t);const chip=$('.panel .ph .chip.num');if(chip){chip.textContent=rp+'%';chip.className='chip num '+(rp===100?'good':rp>=50?'teal':'');}const bar=$('.panel .progress > i');if(bar)bar.style.width=rp+'%';
+ if(rp===100)toast('Routine komplett — GG');
+});
+document.addEventListener('keydown',e=>{if(e.key==='n'&&!e.metaKey&&!e.ctrlKey&&!$('#dlg').open&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){e.preventDefault();gameForm();}});
+
+/* ---------- boot ---------- */
+function start(){load();if(S.view&&VIEWS.some(v=>v[0]===S.view))view=S.view;render();}
+window.claude?.hot?.snapshot?.(()=>({view}));
+if(window.claude?.hot?.ready){window.claude.hot.ready(d=>{start();if(d&&d.view)go(d.view);});}else start();
+</script>
+</body>
+</html>
