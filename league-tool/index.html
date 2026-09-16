@@ -820,7 +820,7 @@ document.addEventListener('click',e=>{
  else if(a==='weekly'){const wk=sub&&sub.week?sub.week:weekKey(ld());weeklyForm(wk,S.weekly.find(x=>x.week===wk));}
  else if(a==='newNote')noteForm();
  else if(a==='resetRoutine'){if(confirm('Routine-Punkte auf Standard zurücksetzen? Der Verlauf bleibt.')){const log=S.routine.log;S.routine=defaultRoutine();S.routine.log=log;save();render();}}
- else if(a==='export'){const j=JSON.stringify(S,null,1);$('#exportBox').value=j;const l=$('#dlLink');try{l.href=URL.createObjectURL(new Blob([j],{type:'application/json'}));l.hidden=false;}catch(e){}}
+ else if(a==='export'){const j=JSON.stringify(S,null,1);$('#exportBox').value=j;const l=$('#dlLink');try{l.href=URL.createObjectURL(new Blob([j],{type:'application/json'}));if(!window.claude)l.hidden=false;}catch(e){}}
  else if(a==='copyExport'){const b=$('#exportBox');if(!b.value)b.value=JSON.stringify(S,null,1);b.select();try{navigator.clipboard.writeText(b.value).then(()=>toast('Kopiert'),()=>document.execCommand('copy'));}catch(e){document.execCommand('copy');toast('Kopiert');}}
  else if(a==='import')doImport();
  else if(a==='clearSample'){if(confirm('Beispieldaten entfernen? Routine-Struktur und Wissen bleiben.')){S=emptyState();save();go('heute');toast('Frischer Start');}}
