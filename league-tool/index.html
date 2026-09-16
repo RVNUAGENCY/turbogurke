@@ -261,7 +261,7 @@ function defaultRoutine(){return{phases:[
 function sampleState(){
  const t=ld();const d=n=>addDays(t,-n);
  const s={version:1,sample:true,view:'heute',
-  profile:{name:'Dein Summoner',role:'Mid',rank:'Emerald',div:'II',lp:47,goalRank:'Diamond',goalDiv:'IV'},
+  profile:{name:'Dein Summoner',role:'Mid',rank:'Emerald',div:'II',lp:47,goalRank:'Diamond',goalDiv:'IV',riotName:'',riotTag:'',region:'euw1',puuid:'',lastSync:0},
   lpHistory:[{date:d(9),v:1},{date:d(8),v:22},{date:d(7),v:14},{date:d(6),v:38},{date:d(5),v:55},{date:d(4),v:41},{date:d(3),v:63},{date:d(2),v:79},{date:d(1),v:32},{date:t,v:47}],
   routine:defaultRoutine(),
   games:[
@@ -319,7 +319,7 @@ function sampleState(){
  s.routine.log[d(6)]={p1:1,p2:1,p4:1,s1:1,s2:1,s5:1,o3:1};
  return s;
 }
-function emptyState(){const s=sampleState();s.sample=false;s.games=[];s.champs=[];s.goals=[];s.reviews=[];s.weekly=[];s.notes=[];s.lpHistory=[];s.routine=defaultRoutine();s.profile={name:'',role:'Mid',rank:'Gold',div:'IV',lp:0,goalRank:'Platinum',goalDiv:'IV'};return s;}
+function emptyState(){const s=sampleState();s.sample=false;s.games=[];s.champs=[];s.goals=[];s.reviews=[];s.weekly=[];s.notes=[];s.lpHistory=[];s.routine=defaultRoutine();s.profile={name:'',role:'Mid',rank:'Gold',div:'IV',lp:0,goalRank:'Platinum',goalDiv:'IV',riotName:'',riotTag:'',region:'euw1',puuid:'',lastSync:0};return s;}
 
 let S;
 function load(){try{const raw=localStorage.getItem(KEY);if(raw){S=JSON.parse(raw);return;}}catch(e){}S=sampleState();}
@@ -377,19 +377,19 @@ function openForm({title,fields,submit='Speichern',onSubmit,onDelete}){
 /* ---------- forms ---------- */
 function gameForm(g){
  const isNew=!g;g=g||{date:ld(),champ:S.champs.find(c=>c.tier==='main')?.name||'',role:S.profile.role,enemy:'',result:'Win',k:null,d:null,a:null,cs10:null,lp:null,tilt:1,mistake:'Kein klarer Fehler',learning:'',reviewed:false,note:''};
- openForm({title:isNew?'Game loggen':'Game bearbeiten',fields:[
+ openForm({title:isNew?'Game loggen':(g.source==='riot'?`${esc(g.champ)} vs ${esc(g.enemy||'?')} · ${g.result} <span class="small muted">· ${Math.round((g.duration||0)/60)} min · Vision ${g.vision??'–'} · Gold@10 ${g.gold10diff!=null?(g.gold10diff>0?'+':'')+g.gold10diff:'–'}</span>`:'Game bearbeiten'),fields:[
   {name:'date',label:'Datum',type:'date',value:g.date,required:true},{name:'result',label:'Ergebnis',type:'select',options:['Win','Loss','Remake'],value:g.result},
   {name:'champ',label:'Mein Champion',value:g.champ,list:'champList',required:true},{name:'enemy',label:'Gegner-Champion (Lane)',value:g.enemy,list:'champList'},
   {name:'role',label:'Rolle',type:'select',options:ROLES,value:g.role},{name:'lp',label:'LP-Änderung (z. B. −18 oder 22)',type:'number',value:g.lp,step:1},
   {name:'k',label:'Kills',type:'number',value:g.k,min:0},{name:'d',label:'Deaths',type:'number',value:g.d,min:0},
   {name:'a',label:'Assists',type:'number',value:g.a,min:0},{name:'cs10',label:'CS @ 10:00',type:'number',value:g.cs10,min:0},
-  {name:'tilt',label:'Tilt-Level (1 ruhig – 5 tilted)',type:'select',options:[1,2,3,4,5],value:g.tilt},{name:'mistake',label:'Hauptfehler',type:'select',options:MISTAKES,value:g.mistake},
+  {name:'tilt',label:'Tilt-Level (1 ruhig – 5 tilted)',type:'select',options:[['','–'],1,2,3,4,5],value:g.tilt??''},{name:'mistake',label:'Hauptfehler',type:'select',options:[['','– wählen –'],...MISTAKES],value:g.mistake},
   {name:'learning',label:'1 Learning aus diesem Game',type:'textarea',value:g.learning,wide:true,ph:'Was mache ich nächstes Mal konkret anders?'},
   {name:'note',label:'Notiz (optional)',type:'textarea',value:g.note,wide:true},
   {name:'reviewed',label:'Game wurde reviewt',type:'checkbox',value:g.reviewed}
  ],onSubmit:o=>{
-  if(isNew){const n={id:uid(),...o};S.games.push(n);if(o.lp!=null&&o.lp!==0){S.profile.lp=Math.max(0,(S.profile.lp||0)+o.lp);pushLP();}toast('Game gespeichert');}
-  else{Object.assign(g,o);toast('Aktualisiert');}
+  if(isNew){o.tilt=o.tilt===''?null:Number(o.tilt);const n={id:uid(),...o};S.games.push(n);if(o.lp!=null&&o.lp!==0){S.profile.lp=Math.max(0,(S.profile.lp||0)+o.lp);pushLP();}toast('Game gespeichert');}
+  else{o.tilt=o.tilt===''?null:Number(o.tilt);Object.assign(g,o);toast('Aktualisiert');}
   save();render();
  },onDelete:isNew?null:()=>{S.games=S.games.filter(x=>x.id!==g.id);save();render();toast('Gelöscht');}});
 }
@@ -482,6 +482,56 @@ function routineItemForm(phase,item){
  onDelete:isNew?null:()=>{phase.items=phase.items.filter(x=>x.id!==item.id);save();render();}});
 }
 
+/* ---------- riot sync ---------- */
+const REGIONS=[['euw1','EU West'],['eun1','EU Nordic & East'],['na1','Nordamerika'],['kr','Korea'],['br1','Brasilien'],['la1','LAN'],['la2','LAS'],['oc1','Ozeanien'],['tr1','Türkei'],['ru','Russland'],['jp1','Japan'],['me1','Middle East'],['sg2','Singapur/SEA'],['tw2','Taiwan'],['vn2','Vietnam']];
+let SERVER=null; // null = unbekannt, false = kein Server (z. B. Artifact), {ok,keyConfigured}
+async function checkServer(){if(SERVER!==null)return SERVER;try{if(!/^https?:/.test(location.protocol))throw 0;const r=await fetch('/api/health',{cache:'no-store'});SERVER=r.ok?await r.json():false;}catch(e){SERVER=false;}return SERVER;}
+const connected=()=>Boolean(S.profile.puuid);
+async function api(path){const r=await fetch(path,{cache:'no-store'});const j=await r.json().catch(()=>({error:'Ungültige Antwort'}));if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j;}
+function applyRank(sum){const p=S.profile;p.name=sum.gameName+'#'+sum.tagLine;p.riotName=sum.gameName;p.riotTag=sum.tagLine;p.puuid=sum.puuid;p.region=sum.platform;if(sum.solo){p.rank=sum.solo.tier;p.div=sum.solo.rank;p.lp=sum.solo.lp;pushLP();}}
+function mergeGames(list){
+ const have=new Set(S.games.map(g=>g.riotId).filter(Boolean));let n=0;
+ for(const g of list){if(have.has(g.riotId))continue;S.games.push({id:uid(),source:'riot',...g,lp:null,tilt:null,mistake:'',learning:'',reviewed:false,note:''});n++;}
+ S.games.sort((a,b)=>(a.ts||0)-(b.ts||0));return n;
+}
+let syncing=false;
+async function syncNow({silent=false}={}){
+ if(syncing||!connected())return;const srv=await checkServer();if(!srv){if(!silent)toast('Kein Server erreichbar — Live-Sync nur über server.js');return;}
+ if(!srv.keyConfigured){if(!silent)toast('RIOT_API_KEY fehlt in .env');return;}
+ syncing=true;const btn=$('#syncBtn');if(btn){btn.disabled=true;btn.textContent='Sync …';}
+ try{
+  const p=S.profile;const before={rank:p.rank,div:p.div,lp:p.lp,ranked:S.games.filter(g=>g.source==='riot'&&g.queue===420).length};
+  const sum=await api(`/api/summoner?name=${encodeURIComponent(p.riotName)}&tag=${encodeURIComponent(p.riotTag)}&region=${p.region}`);
+  const known=S.games.map(g=>g.riotId).filter(Boolean).join(',');
+  const m=await api(`/api/matches?puuid=${sum.puuid}&region=${p.region}&count=20&known=${encodeURIComponent(known)}`);
+  const added=mergeGames(m.games);
+  // LP-Delta zuordnen, wenn genau 1 neues Ranked-Game seit letztem Stand und gleiche Division
+  if(added===1&&sum.solo&&before.rank===sum.solo.tier&&before.div===sum.solo.rank&&p.lastSync){const g=S.games.filter(x=>x.source==='riot'&&x.queue===420).pop();if(g&&g.lp==null)g.lp=sum.solo.lp-before.lp;}
+  applyRank(sum);p.lastSync=Date.now();save();render();
+  if(!silent)toast(added?`${added} neue Games importiert`:'Alles aktuell');
+ }catch(e){if(!silent)toast('Sync fehlgeschlagen: '+e.message);console.warn(e);}
+ finally{syncing=false;}
+}
+async function autoSync(){if(!connected())return;if(Date.now()-(S.profile.lastSync||0)<5*60*1000)return;await syncNow({silent:true});}
+function connectForm(){
+ const p=S.profile;
+ openForm({title:'Riot-Account verbinden',fields:[
+  {name:'riot',label:'Riot-ID (Name#TAG)',value:p.riotName?p.riotName+'#'+p.riotTag:'',required:true,ph:'z. B. Turbogurke#EUW',wide:true},
+  {name:'region',label:'Region',type:'select',options:REGIONS,value:p.region||'euw1',wide:true}
+ ],submit:'Verbinden & laden',onSubmit:async o=>{
+  const [name,tag]=o.riot.split('#').map(s=>s.trim());if(!name||!tag){toast('Format: Name#TAG');return;}
+  const srv=await checkServer();if(!srv){toast('Kein Server erreichbar — Live-Sync nur über server.js');return;}if(!srv.keyConfigured){toast('RIOT_API_KEY fehlt in .env');return;}
+  toast('Verbinde …');
+  try{
+   const sum=await api(`/api/summoner?name=${encodeURIComponent(name)}&tag=${encodeURIComponent(tag)}&region=${o.region}`);
+   if(S.sample){const keep={goalRank:S.profile.goalRank,goalDiv:S.profile.goalDiv,role:S.profile.role};S=emptyState();Object.assign(S.profile,keep);}
+   S.profile.region=o.region;applyRank(sum);S.profile.lastSync=0;save();render();
+   await syncNow();
+  }catch(e){toast('Fehler: '+e.message);}
+ },onDelete:connected()?()=>{Object.assign(S.profile,{riotName:'',riotTag:'',puuid:'',lastSync:0});save();render();toast('Verbindung getrennt');}:null});
+}
+function ago(ts){if(!ts)return'';const m=Math.round((Date.now()-ts)/60000);return m<1?'gerade eben':m<60?`vor ${m} min`:`vor ${Math.round(m/60)} h`;}
+
 /* ---------- chart ---------- */
 function lpChart(){
  const pts=S.lpHistory.slice(-30);
@@ -523,9 +573,10 @@ function vHeute(){
  const rp=routinePct(t);const log=S.routine.log[t]||{};
  const lastLearn=sortGames().filter(g=>g.learning).slice(0,3);
  const p=S.profile;
- return `<div class="head"><div class="title"><div class="eyebrow">${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'})}</div><h1>${esc(p.name||'Heute')}</h1><p>${esc(rankLabel(p.rank,p.div,p.lp))} → Ziel ${esc(rankLabel(p.goalRank,p.goalDiv))}</p></div>
-  <div class="row"><button class="btn" data-act="profile">Rank / LP</button><button class="btn primary" data-act="newGame">+ Game loggen</button></div></div>
- ${S.sample?`<div class="banner"><span><b>Beispieldaten aktiv.</b> So sieht das Tool im Einsatz aus — unter <b>Daten</b> kannst du sie mit einem Klick entfernen und frisch starten.</span><button class="btn sm" data-go="daten">Zu Daten</button></div>`:''}
+ return `<div class="head"><div class="title"><div class="eyebrow">${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'})}</div><h1>${esc(p.name||'Heute')}</h1><p>${esc(rankLabel(p.rank,p.div,p.lp))} → Ziel ${esc(rankLabel(p.goalRank,p.goalDiv))}${connected()&&S.profile.lastSync?` <span class="small">· Sync ${ago(S.profile.lastSync)}</span>`:''} <button class="btn ghost sm" data-act="profile" style="padding:1px 6px">Ziel ändern</button></p></div>
+  <div class="row">${connected()?`<button class="btn" id="syncBtn" data-act="sync" title="Zuletzt ${ago(S.profile.lastSync)}">↻ Sync</button><button class="btn ghost" data-act="connect">${esc(S.profile.riotName)}#${esc(S.profile.riotTag)}</button>`:`<button class="btn" data-act="connect">Riot-Account verbinden</button><button class="btn ghost" data-act="profile">Rank manuell</button>`}<button class="btn primary" data-act="newGame">+ Game loggen</button></div></div>
+ ${!connected()?`<div class="banner"><span>${S.sample?'<b>Beispieldaten aktiv.</b> ':''}<b>Verbinde deinen Riot-Account</b> (Name#TAG) — Rank, LP und Ranked-Games werden dann automatisch geladen${S.sample?' und die Beispieldaten ersetzt':''}.${SERVER===false?' <span class="muted">Hinweis: In dieser Ansicht ist kein Server erreichbar — Live-Sync funktioniert über <code>node server.js</code> (siehe README).</span>':''}</span><span class="row"><button class="btn sm primary" data-act="connect">Verbinden</button>${S.sample?'<button class="btn sm" data-go="daten">Beispieldaten entfernen</button>':''}</span></div>`:''}
+ ${connected()?(()=>{const open=S.games.filter(g=>g.source==='riot'&&g.result!=='Remake'&&!g.learning&&!g.mistake);return open.length?`<div class="banner" style="background:var(--panel2);border-color:var(--line2);color:var(--ink2)"><span><b style="color:var(--gold2)">${open.length} Game${open.length>1?'s':''} ohne Fehler/Learning.</b> 60 Sekunden pro Game: Hauptfehler + ein Learning eintragen — sonst ist der Import nur Statistik.</span><span class="row">${open.slice(0,3).map(g=>`<button class="btn sm" data-game="${g.id}">${esc(g.champ)} vs ${esc(g.enemy||'?')} · ${g.result[0]}</button>`).join('')}</span></div>`:''})():''}
  <div class="tiles" style="margin-bottom:16px">
   <div class="tile"><div class="lbl">Winrate · letzte ${wr.n||0}</div><div class="val" style="color:${wr.wr>=50?'var(--good)':wr.n?'var(--warn)':'var(--muted)'}">${wr.n?wr.wr+'%':'–'}</div><div class="sub num">${wr.w}W ${wr.n-wr.w}L</div></div>
   <div class="tile"><div class="lbl">Streak</div><div class="val" style="color:var(--gold2)">${streak()} <span style="font-size:1rem;color:var(--muted)">Tage</span></div><div class="sub">Routine oder Games geloggt</div></div>
@@ -587,7 +638,7 @@ function vGames(){
  const byChamp=Object.entries(groupBy(games,g=>g.champ)).map(([k,v])=>({k,...winrate(v),cs:avg(v.map(g=>g.cs10))})).sort((a,b)=>b.n-a.n);
  const byMU=Object.entries(groupBy(games.filter(g=>g.enemy),g=>g.champ+' vs '+g.enemy)).map(([k,v])=>({k,...winrate(v)})).sort((a,b)=>b.n-a.n).slice(0,8);
  const ms=mistakeStats(games);const mmax=ms[0]?.n||1;
- return `<div class="head"><div class="title"><h1>Games</h1><p>60 Sekunden pro Game: Ergebnis, Zahlen, <b>ein</b> Fehler, <b>ein</b> Learning. Mehr nicht — sonst hörst du auf zu loggen.</p></div><button class="btn primary" data-act="newGame">+ Game loggen</button></div>
+ return `<div class="head"><div class="title"><h1>Games</h1><p>${connected()?'Ergebnis und Zahlen kommen automatisch aus der Riot-API. Du ergänzt pro Game nur <b>einen</b> Fehler und <b>ein</b> Learning.':'60 Sekunden pro Game: Ergebnis, Zahlen, <b>ein</b> Fehler, <b>ein</b> Learning. Mehr nicht — sonst hörst du auf zu loggen.'}</p></div><div class="row">${connected()?'<button class="btn" id="syncBtn" data-act="sync">↻ Sync</button>':''}<button class="btn primary" data-act="newGame">+ Game loggen</button></div></div>
  <div class="grid g3" style="margin-bottom:16px">
   <div class="panel"><h2>Pro Champion</h2><div class="tw"><table><thead><tr><th>Champion</th><th class="num">Games</th><th class="num">WR</th><th class="num">Ø CS@10</th></tr></thead><tbody>${byChamp.map(c=>`<tr><td>${esc(c.k)}</td><td class="num">${c.n}</td><td class="num" style="color:${c.wr>=50?'var(--good)':'var(--warn)'}">${c.wr}%</td><td class="num">${c.cs??'–'}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">Noch keine Games</td></tr>'}</tbody></table></div></div>
   <div class="panel"><h2>Matchups</h2><div class="tw"><table><thead><tr><th>Matchup</th><th class="num">Games</th><th class="num">WR</th></tr></thead><tbody>${byMU.map(c=>`<tr><td>${esc(c.k)}</td><td class="num">${c.n}</td><td class="num" style="color:${c.wr>=50?'var(--good)':'var(--warn)'}">${c.wr}%</td></tr>`).join('')||'<tr><td colspan="3" class="muted">Noch keine Matchups</td></tr>'}</tbody></table></div></div>
@@ -596,7 +647,7 @@ function vGames(){
  </div>
  <div class="panel"><div class="ph"><h2>Match-Log</h2><input class="search" id="gameSearch" placeholder="Suchen: Champion, Gegner, Fehler …" value="${esc(q)}"></div>
   <div class="tw"><table><thead><tr><th>Datum</th><th>Matchup</th><th>Rolle</th><th>Ergebnis</th><th class="num">KDA</th><th class="num">CS@10</th><th class="num">LP</th><th>Tilt</th><th>Fehler</th><th>Learning</th><th>Rev.</th></tr></thead>
-  <tbody>${f.map(g=>`<tr class="click" data-game="${g.id}"><td class="num" style="white-space:nowrap">${fmtDate(g.date)}</td><td><b>${esc(g.champ)}</b> <span class="muted">vs ${esc(g.enemy||'?')}</span></td><td>${esc(g.role)}</td><td><span class="chip ${g.result.toLowerCase()}">${g.result}</span></td><td class="num">${g.k??'–'}/${g.d??'–'}/${g.a??'–'}</td><td class="num">${g.cs10??'–'}</td><td class="num" style="color:${g.lp>0?'var(--good)':g.lp<0?'var(--crit)':'inherit'}">${g.lp!=null?(g.lp>0?'+':'')+g.lp:'–'}</td><td><span class="dot" style="background:${['','var(--good)','var(--good)','var(--warn)','var(--crit)','var(--crit)'][g.tilt||1]}"></span> ${g.tilt||1}</td><td class="small">${esc(g.mistake)}</td><td class="small" style="max-width:280px">${esc(g.learning)}</td><td>${g.reviewed?'✓':''}</td></tr>`).join('')||`<tr><td colspan="11" class="muted">Keine Games gefunden</td></tr>`}</tbody></table></div></div>`;
+  <tbody>${f.map(g=>`<tr class="click" data-game="${g.id}"><td class="num" style="white-space:nowrap">${fmtDate(g.date)}</td><td><b>${esc(g.champ)}</b> <span class="muted">vs ${esc(g.enemy||'?')}</span>${g.source==='riot'?' <span class="chip teal" title="Aus Riot-API importiert">API</span>':''}${g.queue===440?' <span class="chip">Flex</span>':''}</td><td>${esc(g.role)}</td><td><span class="chip ${g.result.toLowerCase()}">${g.result}</span></td><td class="num">${g.k??'–'}/${g.d??'–'}/${g.a??'–'}</td><td class="num">${g.cs10??'–'}</td><td class="num" style="color:${g.lp>0?'var(--good)':g.lp<0?'var(--crit)':'inherit'}">${g.lp!=null?(g.lp>0?'+':'')+g.lp:'–'}</td><td>${g.tilt?`<span class="dot" style="background:${['','var(--good)','var(--good)','var(--warn)','var(--crit)','var(--crit)'][g.tilt]}"></span> ${g.tilt}`:'–'}</td><td class="small">${g.mistake?esc(g.mistake):'<span class="chip warn">offen</span>'}</td><td class="small" style="max-width:280px">${g.learning?esc(g.learning):(g.source==='riot'?'<span class="muted">eintragen →</span>':'')}</td><td>${g.reviewed?'✓':''}</td></tr>`).join('')||`<tr><td colspan="11" class="muted">Keine Games gefunden</td></tr>`}</tbody></table></div></div>`;
 }
 function avg(list){const v=list.filter(x=>x!=null&&x!=='');return v.length?Math.round(v.reduce((a,b)=>a+Number(b),0)/v.length):null;}
 
@@ -767,6 +818,7 @@ function vDaten(){
  <div class="grid g2">
   <div class="panel"><h2>Export</h2><p class="small muted">Kopiere das JSON und speichere es als Datei (z. B. <code>climb-journal.json</code>). Aktuell ${size} KB · ${S.games.length} Games · ${S.champs.length} Champions · ${S.reviews.length} Reviews.</p><textarea id="exportBox" readonly style="min-height:160px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem"></textarea><div class="row" style="margin-top:8px"><button class="btn" data-act="export">JSON erzeugen</button><button class="btn" data-act="copyExport">Kopieren</button><a class="btn" id="dlLink" download="climb-journal.json" hidden>Als Datei speichern</a></div></div>
   <div class="panel"><h2>Import</h2><p class="small muted">JSON hier einfügen. Ersetzt den aktuellen Stand komplett — vorher exportieren.</p><textarea id="importBox" placeholder='{"version":1, …}' style="min-height:160px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem"></textarea><div class="row" style="margin-top:8px"><button class="btn primary" data-act="import">Importieren</button><label class="btn" for="importFile">Datei wählen</label><input type="file" id="importFile" accept="application/json,.json" hidden></div></div>
+  <div class="panel"><h2>Riot-Verbindung</h2><p class="small muted">${connected()?`Verbunden mit <b>${esc(S.profile.riotName)}#${esc(S.profile.riotTag)}</b> (${esc(S.profile.region)}). Rank, LP und Ranked-Solo-Games (letzte 20) werden beim Öffnen automatisch geladen, wenn der letzte Sync älter als 5 Minuten ist.`:'Nicht verbunden. Der Sync läuft über <code>server.js</code> mit deinem Riot-API-Key — siehe README.'}</p><div class="row"><button class="btn" data-act="connect">${connected()?'Verbindung ändern':'Verbinden'}</button>${connected()?'<button class="btn" data-act="sync">↻ Jetzt syncen</button>':''}</div></div>
   <div class="panel"><h2>Beispieldaten</h2><p class="small muted">${S.sample?'Das Tool zeigt aktuell Beispieldaten (Orianna-Main, Emerald II). Entfernen setzt Games, Champions, Ziele, Reviews und Notizen zurück — die Standard-Routine und das Wissen bleiben.':'Keine Beispieldaten aktiv.'}</p>${S.sample?'<button class="btn danger" data-act="clearSample">Beispieldaten entfernen & frisch starten</button>':''}</div>
   <div class="panel"><h2>Zurücksetzen</h2><p class="small muted">Löscht alles und lädt die Beispieldaten neu.</p><button class="btn danger" data-act="reset">Alles zurücksetzen</button></div>
  </div>`;
@@ -809,6 +861,8 @@ document.addEventListener('click',e=>{
  if(t.dataset.tag!=null){sub={...(sub||{}),tag:t.dataset.tag||null};render();return;}
  const a=t.dataset.act;
  if(a==='newGame')gameForm();
+ else if(a==='connect')connectForm();
+ else if(a==='sync')syncNow();
  else if(a==='profile')profileForm();
  else if(a==='newGoal')goalForm();
  else if(a==='newChamp')champForm();
@@ -835,7 +889,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('keydown',e=>{if(e.key==='n'&&!e.metaKey&&!e.ctrlKey&&!$('#dlg').open&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){e.preventDefault();gameForm();}});
 
 /* ---------- boot ---------- */
-function start(){load();if(S.view&&VIEWS.some(v=>v[0]===S.view))view=S.view;render();}
+function start(){load();if(S.view&&VIEWS.some(v=>v[0]===S.view))view=S.view;render();checkServer().then(()=>{if(view==='heute')render();autoSync();});}
 window.claude?.hot?.snapshot?.(()=>({view}));
 if(window.claude?.hot?.ready){window.claude.hot.ready(d=>{start();if(d&&d.view)go(d.view);});}else start();
 </script>
