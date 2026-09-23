@@ -485,6 +485,42 @@ footer ul{padding-left:18px;margin:6px 0}
 @media (max-width:980px){.guide{grid-template-columns:1fr}.g-toc{position:static;flex-direction:row;flex-wrap:wrap;gap:6px}.g-toc a{grid-template-columns:auto auto;padding:6px 10px;background:var(--surface);border:1px solid var(--line);font-size:13px}.g-toc .c{display:none}}
 @media (max-width:640px){.calc{grid-template-columns:1fr 1fr}.calc-out{grid-template-columns:1fr}.g-hero{padding:18px}.g-sources ul{columns:1}.gsec h3{font-size:21px}}
 
+/* ---------- coach ---------- */
+.coach{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+.coach-side{display:grid;gap:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 118px)}
+.coach-h{font-size:26px;font-weight:700;line-height:1.05;margin-top:4px}
+.coach-quick{display:grid;gap:6px}
+.qbtn{text-align:left;font:inherit;font-size:14px;font-weight:600;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;transition:border-color .12s,background .12s}
+.qbtn:hover{border-color:var(--range)}
+.qbtn:disabled{opacity:.5;cursor:not-allowed}
+.coach-foot{margin-top:12px;display:flex;justify-content:flex-end}
+.coach-data{font-size:13.5px;color:var(--muted)}
+.coach-data b{color:var(--ink)}
+.coach-data ul{margin:6px 0 0;padding-left:18px}
+.coach-main{display:flex;flex-direction:column;min-height:560px}
+.coach-log{flex:1;display:flex;flex-direction:column;gap:14px;overflow-y:auto;max-height:70vh;padding:4px 2px 8px}
+.cmsg{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start}
+.cmsg.me{grid-template-columns:minmax(0,1fr) 34px}
+.cmsg.me .cbody{grid-column:1;justify-self:end;background:var(--range-soft);border-color:color-mix(in srgb,var(--range) 30%,transparent)}
+.cmsg.me .cb-me{grid-column:2}
+.cb-ai,.cb-me{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:700;font-size:16px}
+.cb-ai{background:var(--hero);color:#5AD1C8}
+.cb-me{background:var(--surface-2);color:var(--muted)}
+.cbody{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.55;max-width:72ch;overflow-wrap:anywhere}
+.cbody p{margin:0 0 8px}.cbody p:last-child{margin:0}
+.cbody ul,.cbody ol{margin:4px 0 8px;padding-left:20px}
+.cbody li{margin:3px 0}
+.cbody h4{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:17px;font-weight:700;margin:10px 0 4px}
+.cbody code{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:.92em}
+.cbody.thinking{color:var(--muted);font-style:italic}
+.cbody.err{border-color:color-mix(in srgb,var(--ember) 40%,transparent);color:var(--ember)}
+.coach-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.coach-form textarea{font:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:100%;resize:vertical;min-height:48px}
+.coach-form textarea:focus{outline:none;border-color:var(--range);box-shadow:0 0 0 3px var(--range-soft)}
+.coach-actions{display:flex;gap:8px}
+@media (max-width:980px){.coach{grid-template-columns:1fr}.coach-side{position:static}.coach-main{min-height:420px}.coach-log{max-height:none}}
+@media (max-width:640px){.coach-form{grid-template-columns:1fr}.coach-actions{justify-content:flex-end}}
+
 @media (max-width:900px){
   .hero{grid-template-columns:1fr;padding:22px}
   .weg{grid-template-columns:1fr}
@@ -532,7 +568,7 @@ footer ul{padding-left:18px;margin:6px 0}
       </div>
     </div>
     <nav class="secnav tabs" aria-label="Bereiche" role="tablist">
-      <a href="#uebersicht" data-tab-link="uebersicht" role="tab">Übersicht</a><a href="#setup" data-tab-link="setup" role="tab">Setup-Guide</a><a href="#adc" data-tab-link="adc" role="tab">ADC-Guide</a><a href="#plan" data-tab-link="plan" role="tab">Plan &amp; Module</a><a href="#routine" data-tab-link="routine" role="tab">Routine</a><a href="#kennzahlen" data-tab-link="kennzahlen" role="tab">Kennzahlen</a><a href="#wissen" data-tab-link="wissen" role="tab">Wissen &amp; Regeln</a>
+      <a href="#uebersicht" data-tab-link="uebersicht" role="tab">Übersicht</a><a href="#setup" data-tab-link="setup" role="tab">Setup-Guide</a><a href="#adc" data-tab-link="adc" role="tab">ADC-Guide</a><a href="#coach" data-tab-link="coach" role="tab">Coach</a><a href="#plan" data-tab-link="plan" role="tab">Plan &amp; Module</a><a href="#routine" data-tab-link="routine" role="tab">Routine</a><a href="#kennzahlen" data-tab-link="kennzahlen" role="tab">Kennzahlen</a><a href="#wissen" data-tab-link="wissen" role="tab">Wissen &amp; Regeln</a>
     </nav>
   </div>
 </header>
@@ -823,6 +859,46 @@ footer ul{padding-left:18px;margin:6px 0}
     <div class="card g-sources"><b>Quellen</b><ul><li><a href="https://www.youtube.com/results?search_query=Reptile+challenger+guide+cooldown+tracking" target="_blank" rel="noopener">Reptile – Challenger Guide to Cooldown Tracking (Video)</a></li><li><a href="https://www.youtube.com/results?search_query=Reptile+how+to+wave+control+in+2+minutes" target="_blank" rel="noopener">Reptile – How to wave control in 2 minutes, Teil 1–3 (Videos)</a></li><li><a href="https://www.twitch.tv/search?term=Reptile" target="_blank" rel="noopener">Reptile – League Mastery, ADC-Kurs Lektionen 1–5 (Videos)</a></li><li><a href="https://drive.google.com/drive/folders/1aKprmzwCxsgDhUExL1Rx6unmjMbhvnf2" target="_blank" rel="noopener">Reptile – Texte: Goal Setting, Champion Pool, Champion Pick, Track your games</a></li></ul></div>
   </div>
 </div>
+</div>
+
+<div class="tab" id="coach" data-tab="coach" role="tabpanel" hidden>
+<section class="sec" style="margin-top:26px">
+  <div class="coach">
+    <aside class="coach-side">
+      <div class="card">
+        <div class="eyebrow">Coach</div>
+        <h2 class="coach-h">Frag mich zu deinen Games</h2>
+        <p class="muted" style="font-size:14px;margin:6px 0 10px">Ich sehe deine letzten 20 Ranked-Games aus der Riot-API (Champion, Matchup, KDA, CS@10/14, Gold-Differenz zum Lane-Gegner, jeden Tod mit Zeitpunkt und Killer) und bewerte sie nach Reptiles Prinzipien.</p>
+        <span class="chip" id="coach-status">Prüfe Verfügbarkeit …</span>
+        <div class="coach-quick">
+          <div class="eyebrow" style="margin:14px 0 6px">Schnellfragen</div>
+          <button type="button" class="qbtn" data-q="Was habe ich in meinen letzten 5 Games falsch gemacht? Geh Game für Game durch.">Letzte 5 Games: Fehler</button>
+          <button type="button" class="qbtn" data-q="Analysiere mein letztes Game im Detail: Laning-Phase, jeder Tod, was ich hätte anders machen sollen.">Letztes Game im Detail</button>
+          <button type="button" class="qbtn" data-q="Wann und woran sterbe ich am häufigsten? Finde das Muster über alle Games (Zeitpunkt, Killer, Phase).">Mein Todesmuster</button>
+          <button type="button" class="qbtn" data-q="Welcher meiner Champions läuft am schlechtesten und warum? Vergleiche CS@10, Gold-Differenz und Tode pro Champion.">Champion-Vergleich</button>
+          <button type="button" class="qbtn" data-q="Gib mir genau EIN Ziel für die nächste Session, mit Namen nach Reptiles Regeln, und woran ich es messe.">Ein Ziel für heute</button>
+        </div>
+        <div class="coach-foot">
+          <button type="button" class="btn ghost" id="coach-clear">Verlauf löschen</button>
+        </div>
+      </div>
+      <div class="card coach-data" id="coach-data"></div>
+    </aside>
+    <div class="card coach-main">
+      <div class="coach-log" id="coach-log" aria-live="polite">
+        <div class="cmsg ai"><div class="cb-ai">C</div><div class="cbody">Hey. Ich bin dein Coach für diese Seite. Frag mich, was du in den letzten Games falsch gemacht hast, oder nimm eine Schnellfrage links. Ich antworte nur mit dem, was in deinen Daten wirklich zu sehen ist, und sage dir, wo ich raten müsste.</div></div>
+      </div>
+      <form class="coach-form" id="coach-form">
+        <textarea id="coach-in" rows="2" placeholder="Zum Beispiel: Warum verliere ich mit Jinx die Lane gegen Draven?"></textarea>
+        <div class="coach-actions">
+          <button type="button" class="btn ghost" id="coach-stop" hidden>Stopp</button>
+          <button type="submit" class="btn primary" id="coach-send">Senden</button>
+        </div>
+      </form>
+      <p class="muted" style="font-size:12.5px;margin:8px 0 0" id="coach-note">Jede Antwort nutzt dein eigenes Claude-Kontingent. Der Verlauf wird in deinem Account gespeichert.</p>
+    </div>
+  </div>
+</section>
 </div>
 
 <div class="tab" id="plan" data-tab="plan" role="tabpanel" hidden>
@@ -1469,7 +1545,7 @@ footer ul{padding-left:18px;margin:6px 0}
   });
 
   /* ---------- tabs ---------- */
-  var TABS=['uebersicht','setup','adc','plan','routine','kennzahlen','wissen'];
+  var TABS=['uebersicht','setup','adc','coach','plan','routine','kennzahlen','wissen'];
   function tabOf(el){ var p=el&&el.closest?el.closest('.tab'):null; return p?p.getAttribute('data-tab'):null; }
   function showTab(name,scrollTarget){
     if(TABS.indexOf(name)<0) name='uebersicht';
@@ -1630,7 +1706,7 @@ footer ul{padding-left:18px;margin:6px 0}
       if(!db) return;
       cfgRef=db.doc('riot/config');
       ['config','profile','lp','matches'].forEach(function(k){
-        db.doc('riot/'+k).onSnapshot(function(s){ R[k]=s.exists?s.data():null; renderRiot(); },function(){});
+        db.doc('riot/'+k).onSnapshot(function(s){ R[k]=s.exists?s.data():null; renderRiot(); if(typeof coachDataPanel==='function') coachDataPanel(); },function(){});
       });
     }).catch(function(){});
   })();
@@ -1676,6 +1752,105 @@ footer ul{padding-left:18px;margin:6px 0}
     $$('.gsec').forEach(function(sec){gio.observe(sec);});
   }
   updateGuide();
+
+  /* ---------- coach (sample) ---------- */
+  var COACH_RULES = 'Du bist ein Challenger-ADC-Coach (deutsch, du-Form, direkt, konkret, keine Floskeln). Du coachst den Spieler dieser Seite anhand seiner ECHTEN Ranked-Daten aus der Riot-API, die unten stehen. Regeln:\n'
+   +'1. Beziehe dich immer auf konkrete Games (Champion, Gegner, Datum/Position in der Liste) und Zahlen (CS@10, CS@14, Gold-Diff, Tode mit Zeitpunkt und Killer, KP, Schadensanteil).\n'
+   +'2. Sag klar, was du NICHT sehen kannst (Entscheidungen, Wave-States, Positionierung, Cooldowns, Kommunikation). Rate nicht; formuliere Hypothesen als Hypothesen und sag, was er im Replay prüfen soll.\n'
+   +'3. Bewerte nach diesen Prinzipien (Reptile, Challenger-ADC): Lane Opener (Prio/Trades/Base-Timer, keine gleichwertigen Trades gegen Heal-Supports); Cooldown-Tracking (nur traden, wenn der Gegner Kern-Spells verbraucht hat); Wave-Management (Freeze/Slow-Push/Neutral, nicht auf Freeze fighten); Recall auf der Cannon-Wave, kein Greed für Platings; Mid-Game: ADC mit Support/Jungler um Mid, vor jedem Fight Tab (Items, Flashes, Ults), sonst Cross-Map farmen; Teamfight: Der Kreis (max. in einer gegnerischen Range stehen); Out of Vision gegen Snap-Engage; Ziele: endlos, einfach, mit Namen.\n'
+   +'4. Richtwerte ADC: CS@10 >= 75 gut, < 65 schwach; CS@14 >= 110 gut; Tode vor 14:00 sollten <= 0,5 pro Game sein; Tode nach 20:00 <= 1,2; Schadensanteil >= 25 % gut; KP >= 50 % gut. Gold-Diff@14 negativ = Lane verloren.\n'
+   +'5. Format: Markdown-light (**fett**, Listen, kurze Zwischenueberschriften mit ####). Kurz und dicht, max. ca. 350 Woerter, ausser er bittet um Details. Am Ende IMMER genau ein konkretes Ziel fuer die naechste Session (mit Namen).\n'
+   +'6. Tode: Zeitpunkt < 14:00 = Laning-Phase (frage nach Cooldowns/Wave), 14-25 = Mid-Game (Rotation/Vision/Tab-Check), > 25 = Late (Kreis/Out of Vision). Position x/y: Karte 0-15000, Bot-Lane ist rechts unten (x hoch, y niedrig), Top links oben; eigene Base unten links wenn Blue Side (Seite nicht bekannt, sag das).\n'
+   +'7. Wenn Daten fehlen (keine Games, kein Sync), sag das und frage nach seiner eigenen Beschreibung.\n';
+  function coachContext(){
+    var pr=R.profile, so=pr&&pr.solo, ms=(R.matches&&R.matches.items)||[], lp=(R.lp&&R.lp.points)||[];
+    var lines=[];
+    lines.push('SPIELER: '+(pr?pr.gameName+'#'+pr.tagLine:'unbekannt')+' · Rolle ADC · Pool Jinx/Caitlyn/Zeri · Ziel Challenger.');
+    if(so) lines.push('RANG Solo/Duo: '+tierName(so.tier)+(apex(so.tier)?'':' '+so.rank)+' '+so.lp+' LP, '+so.wins+'W/'+so.losses+'L ('+Math.round(so.wins/(so.wins+so.losses)*100)+' %).');
+    if(lp.length>1) lines.push('LP-VERLAUF (letzte Sync-Punkte): '+lp.slice(-8).map(function(p){return tierName(p.tier)+(apex(p.tier)?'':' '+p.rank)+' '+p.lp;}).join(' -> '));
+    lines.push('PLAN: Woche '+week+', Phase '+$('#st-phase').textContent+' ('+$('#st-phase-name').textContent+').');
+    var kp=[];['cs10','cs14','d14','dall','d20','gd14','dmg','vs','wr'].forEach(function(k){ if(kpi[k]) kp.push(k+'='+kpi[k]); });
+    if(kp.length) lines.push('EIGENE KENNZAHLEN (selbst eingetragen): '+kp.join(', '));
+    if(!ms.length){ lines.push('GAMES: keine geladen.'); return lines.join('\n'); }
+    lines.push('LETZTE RANKED-GAMES (neueste zuerst; Format: Nr | Datum | Queue | mein Champ + Support vs Gegner-ADC + Support | Ergebnis | KDA | KP | CS gesamt (CS/min) | CS@10 / CS@14 | Gold-Diff@10 / @14 zum Lane-Gegner | Schadensanteil | Dauer | Tode [Zeit von Killer (+Assists)]):');
+    ms.slice(0,20).forEach(function(m,i){
+      var d=new Date(m.ts||0), dt=('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.';
+      var mins=m.dur?m.dur/60:0;
+      var deaths=(m.deaths||[]).map(function(x){return x.t+' von '+x.by+(x.with&&x.with.length?' (+'+x.with.join(', ')+')':'');}).join('; ')||'keine';
+      lines.push((i+1)+' | '+dt+' | '+m.queue+' | '+champName(m.champ)+(m.support?' + '+champName(m.support):'')+' vs '+(m.enemy?champName(m.enemy):'?')+(m.enemySupport?' + '+champName(m.enemySupport):'')+' | '+(m.remake?'Remake':m.win?'SIEG':'NIEDERLAGE')+' | '+m.k+'/'+m.d+'/'+m.a+' | KP '+(m.kp||0)+'% | '+m.cs+' ('+(mins?(m.cs/mins).toFixed(1):'?')+') | '+(m.cs10!=null?m.cs10:'?')+' / '+(m.cs14!=null?m.cs14:'?')+' | '+(m.gd10!=null?(m.gd10>0?'+':'')+m.gd10:'?')+' / '+(m.gd14!=null?(m.gd14>0?'+':'')+m.gd14:'?')+' | '+(m.dmgShare!=null?m.dmgShare+'%':'?')+' | '+Math.floor(mins)+' min | '+deaths);
+    });
+    return lines.join('\n');
+  }
+  function coachDataPanel(){
+    var ms=(R.matches&&R.matches.items)||[], el=$('#coach-data'); if(!el) return;
+    if(!ms.length){ el.innerHTML='<b>Datenbasis:</b> noch keine Games geladen. Sobald der Riot-Sync gelaufen ist, sieht der Coach deine Games.'; return; }
+    var real=ms.filter(function(m){return !m.remake;}), early=0, late=0, n=0, cs10=[], gd14=[];
+    real.forEach(function(m){ (m.deaths||[]).forEach(function(d){ var t=parseInt(d.t.split(':')[0],10); if(t<14) early++; else if(t>=25) late++; }); n++; if(m.cs10!=null) cs10.push(m.cs10); if(m.gd14!=null) gd14.push(m.gd14); });
+    var avg=function(a){return a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;};
+    el.innerHTML='<b>Datenbasis:</b> '+real.length+' Ranked-Games (Sync '+ago(R.profile&&R.profile.syncedAt)+')<ul><li>Ø CS@10: <b>'+(avg(cs10)==null?'–':avg(cs10))+'</b> (Ziel ≥ 75)</li><li>Ø Gold-Diff@14: <b>'+(avg(gd14)==null?'–':(avg(gd14)>0?'+':'')+avg(gd14))+'</b></li><li>Tode vor 14:00: <b>'+(n?(early/n).toFixed(1):'–')+'</b> pro Game (Ziel ≤ 0,5)</li><li>Tode nach 25:00: <b>'+(n?(late/n).toFixed(1):'–')+'</b> pro Game</li></ul>';
+  }
+  var coachSample=null, coachTurns=[], coachRef=null, coachCtl=null, coachBusy=false;
+  function mdLite(t){
+    var h=esc(t);
+    h=h.replace(/^#{1,4}\s+(.+)$/gm,'<h4>$1</h4>');
+    h=h.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>');
+    var out=[], list=null;
+    h.split('\n').forEach(function(line){
+      var m=line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)$/);
+      if(m){ var type=/^\s*\d/.test(line)?'ol':'ul'; if(!list||list.type!==type){ if(list) out.push('</'+list.type+'>'); list={type:type}; out.push('<'+type+'>'); } out.push('<li>'+m[1]+'</li>'); return; }
+      if(list){ out.push('</'+list.type+'>'); list=null; }
+      if(!line.trim()) return;
+      if(/^<h4>/.test(line)) out.push(line); else out.push('<p>'+line+'</p>');
+    });
+    if(list) out.push('</'+list.type+'>');
+    return out.join('');
+  }
+  function coachAdd(role,text,cls){
+    var log=$('#coach-log'), d=document.createElement('div'); d.className='cmsg '+(role==='me'?'me':'ai');
+    d.innerHTML=role==='me'?'<div class="cbody">'+esc(text)+'</div><div class="cb-me">Du</div>':'<div class="cb-ai">C</div><div class="cbody'+(cls?' '+cls:'')+'"></div>';
+    if(role!=='me'){ var b=$('.cbody',d); if(cls==='thinking'||cls==='err') b.textContent=text; else b.innerHTML=mdLite(text); }
+    log.appendChild(d); log.scrollTop=log.scrollHeight; return d;
+  }
+  function coachRender(){
+    var log=$('#coach-log'); $$('.cmsg',log).slice(1).forEach(function(x){x.remove();});
+    coachTurns.forEach(function(t){ coachAdd(t.role==='user'?'me':'ai',t.content); });
+  }
+  function coachSave(){
+    try{ localStorage.setItem('rtc.coach',JSON.stringify(coachTurns.slice(-30))); }catch(e){}
+    if(coachRef){ coachRef.set({turns:coachTurns.slice(-30),updatedAt:Date.now()}).catch(function(){}); }
+  }
+  function coachSetStatus(st,msg){ var c=$('#coach-status'); if(!c) return; c.className='chip'+(st==='ok'?' up':st==='err'?' down':''); c.textContent=msg; }
+  function coachErr(code){
+    var map={not_granted:'Du hast dem Coach den Zugriff auf Claude nicht erlaubt. Lade die Seite neu und erlaube es beim ersten Senden.',sampling_disabled:'Claude ist für diesen Account hier nicht verfügbar.',rate_limited:'Dein Claude-Kontingent ist gerade erschöpft oder zu viele Anfragen. Versuch es später nochmal.',prompt_too_large:'Zu viel Text im Verlauf. Lösch den Verlauf und frag nochmal.',refused:'Diese Anfrage wurde abgelehnt. Formulier sie anders.',session_expired:'Bitte neu bei claude.ai anmelden.',upstream_error:'Verbindungsfehler. Einfach nochmal senden.',empty_completion:'Keine Antwort erhalten. Frag kürzer oder anders.'};
+    return map[code]||('Fehler ('+code+'). Nochmal versuchen.');
+  }
+  function coachAsk(q){
+    if(coachBusy||!coachSample) return;
+    q=String(q||'').trim(); if(!q) return;
+    coachBusy=true; $('#coach-send').disabled=true; $('#coach-stop').hidden=false; $$('.qbtn').forEach(function(b){b.disabled=true;});
+    coachTurns.push({role:'user',content:q}); coachAdd('me',q); $('#coach-in').value='';
+    var bubble=coachAdd('ai','Denkt nach … (bis zu einer Minute, beim ersten Mal fragt Claude nach deiner Erlaubnis)','thinking'), body=$('.cbody',bubble);
+    coachCtl=new AbortController();
+    var input=[{role:'user',content:COACH_RULES+'\nDATEN:\n'+coachContext()}].concat(coachTurns.slice(-12));
+    coachSample(input,{cache:false,signal:coachCtl.signal,onText:function(u){ body.className='cbody'; body.innerHTML=mdLite(u.text); $('#coach-log').scrollTop=$('#coach-log').scrollHeight; }})
+      .then(function(r){ body.className='cbody'; body.innerHTML=mdLite(r.text)+(r.truncated?'<p><i>(abgeschnitten, frag nach dem Rest)</i></p>':''); coachTurns.push({role:'assistant',content:r.text}); coachSave(); })
+      .catch(function(e){ if(e&&e.code==='cancelled'){ if(e.text){ body.className='cbody'; body.innerHTML=mdLite(e.text); coachTurns.push({role:'assistant',content:e.text}); coachSave(); } else bubble.remove(); return; }
+        body.className='cbody err'; body.textContent=coachErr(e&&e.code); if(e&&(e.code==='not_granted'||e.code==='sampling_disabled')) coachSetStatus('err','Nicht verfügbar'); })
+      .then(function(){ coachBusy=false; $('#coach-send').disabled=false; $('#coach-stop').hidden=true; $$('.qbtn').forEach(function(b){b.disabled=false;}); });
+  }
+  (function(){
+    try{ var s=localStorage.getItem('rtc.coach'); if(s) coachTurns=JSON.parse(s)||[]; }catch(e){}
+    coachRender(); coachDataPanel();
+    var f=$('#coach-form'); if(!f) return;
+    f.addEventListener('submit',function(e){ e.preventDefault(); coachAsk($('#coach-in').value); });
+    $('#coach-in').addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); coachAsk($('#coach-in').value); } });
+    $('#coach-stop').addEventListener('click',function(){ if(coachCtl) coachCtl.abort(); });
+    $$('.qbtn').forEach(function(b){ b.addEventListener('click',function(){ coachAsk(b.getAttribute('data-q')); }); });
+    $('#coach-clear').addEventListener('click',function(){ coachTurns=[]; coachRender(); coachSave(); });
+    var cl=window.claude; if(!cl||typeof cl.use!=='function'){ coachSetStatus('err','Nur auf claude.ai verfügbar'); $('#coach-send').disabled=true; return; }
+    cl.use('sample').then(function(s){ coachSample=s; if(!s){ coachSetStatus('err','In dieser Ansicht nicht verfügbar'); $('#coach-send').disabled=true; } else coachSetStatus('ok','Bereit'); });
+    Promise.all([cl.use('db'),cl.use('user')]).then(function(r){ var db=r[0],user=r[1]; if(!db||!user) return; return user.me().then(function(me){ if(!me||!me.id) return; coachRef=db.doc('data/users/'+me.id+'/coach'); coachRef.get().then(function(snap){ if(snap.exists){ var d=snap.data()||{}; if(Array.isArray(d.turns)&&d.turns.length&&!coachBusy){ coachTurns=d.turns; coachRender(); } } }).catch(function(){}); }); }).catch(function(){});
+  })();
 
   renderWeek(false); updateProgress();
 })();
