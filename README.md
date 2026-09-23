@@ -48,3 +48,11 @@ brand/
 - Geplante Ableitungen: Twitch-Stream-Overlay-Paket, danach Discord-Server-Branding
 
 Der fertige Design-Brief liegt in [`claude-design-prompt.md`](claude-design-prompt.md).
+
+## League-Website (`website/`)
+
+Übersichtliche LoL-Profilseite im TURBOGURKE-Look: Rang & LP-Verlauf, Kennzahlen, Champion-Pool, letzte Matches (filterbar), Stream-Plan.
+
+- **Daten pflegen:** nur `website/data.js` bearbeiten (Rang, Champions, Matches, Stream-Zeiten, Links) — die Seite baut sich daraus automatisch. Aktuell stehen dort Beispielwerte.
+- **Ansehen:** im Repo-Root `python3 -m http.server` starten und `http://localhost:8000/website/` öffnen (die Seite nutzt Bilder aus `brand/`).
+- Champion-Bilder kommen von Riots Data Dragon (`name` = Data-Dragon-ID, z. B. `LeeSin`, `MonkeyKing`).

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TURBOGURKE — League of Legends</title>
+  <meta name="description" content="Rang, Champion-Pool und letzte Matches von TURBOGURKE in League of Legends." />
+  <link rel="icon" href="../brand/badges/badge-1-72px.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a href="#top" class="brand" aria-label="TURBOGURKE Startseite">
+        <img src="../brand/wordmark/turbogurke-wordmark-lime.png" alt="TURBOGURKE" />
+      </a>
+      <nav class="nav" aria-label="Hauptnavigation">
+        <a href="#overview">Übersicht</a>
+        <a href="#champions">Champions</a>
+        <a href="#matches">Matches</a>
+        <a href="#stream">Stream</a>
+      </nav>
+      <a id="live-pill" class="live-pill" href="#" target="_blank" rel="noopener"></a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO / PROFIL -->
+    <section class="hero">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="wrap hero-inner">
+        <div class="profile">
+          <div class="avatar">
+            <img src="../brand/badges/badge-2-1000px.png" alt="" />
+            <span id="level" class="level"></span>
+          </div>
+          <div class="profile-text">
+            <p class="eyebrow">League of Legends · <span id="region"></span></p>
+            <h1><span id="riot-id"></span><span id="riot-tag" class="tag"></span></h1>
+            <p id="roles" class="roles"></p>
+            <div id="profile-links" class="profile-links"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÜBERSICHT -->
+    <section id="overview" class="wrap section">
+      <div class="section-head">
+        <h2>Übersicht</h2>
+        <p class="muted">Aktuelle Season</p>
+      </div>
+
+      <div id="kpis" class="kpis"></div>
+
+      <div class="grid-2">
+        <div id="rank-cards" class="rank-cards"></div>
+        <article class="card chart-card">
+          <header class="card-head">
+            <h3>LP-Verlauf · Solo/Duo</h3>
+            <span id="lp-delta" class="chip"></span>
+          </header>
+          <div id="lp-chart" class="lp-chart"></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- CHAMPIONS -->
+    <section id="champions" class="wrap section">
+      <div class="section-head">
+        <h2>Champion-Pool</h2>
+        <p class="muted">Sortiert nach Spielen</p>
+      </div>
+      <div id="champ-grid" class="champ-grid"></div>
+    </section>
+
+    <!-- MATCHES -->
+    <section id="matches" class="wrap section">
+      <div class="section-head">
+        <h2>Letzte Matches</h2>
+        <div class="filters" role="tablist" aria-label="Matches filtern">
+          <button class="filter is-active" data-filter="all" role="tab" aria-selected="true">Alle</button>
+          <button class="filter" data-filter="win" role="tab" aria-selected="false">Siege</button>
+          <button class="filter" data-filter="loss" role="tab" aria-selected="false">Niederlagen</button>
+        </div>
+      </div>
+      <div id="form-strip" class="form-strip" aria-label="Formkurve"></div>
+      <ol id="match-list" class="match-list"></ol>
+    </section>
+
+    <!-- STREAM -->
+    <section id="stream" class="wrap section">
+      <div class="section-head">
+        <h2>Stream-Plan</h2>
+        <p class="muted">Live auf Twitch</p>
+      </div>
+      <div id="schedule" class="schedule"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <img src="../brand/badges/badge-1-72px.png" alt="" width="36" height="36" />
+      <p>TURBOGURKE ist nicht mit Riot Games verbunden. League of Legends ist eine Marke von Riot Games, Inc.</p>
+    </div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
