@@ -124,7 +124,37 @@ def main():
         opp = next((p for p in info["participants"] if p["teamId"] != me["teamId"]
                     and p.get("teamPosition") and p.get("teamPosition") == me.get("teamPosition")), None)
         team_kills = sum(p["kills"] for p in info["participants"] if p["teamId"] == me["teamId"]) or 1
+        team_dmg = sum(p["totalDamageDealtToChampions"] for p in info["participants"] if p["teamId"] == me["teamId"]) or 1
+        # Zeitleiste: CS/Gold @10 und @14, Tode mit Zeitpunkt (fuer den Coach)
+        tl = api(f"https://{region}.api.riotgames.com/lol/match/v5/matches/{mid}/timeline", key)
+        cs10 = cs14 = gd10 = gd14 = None
+        deaths = []
+        if tl:
+            pid = me["participantId"]
+            opid = opp["participantId"] if opp else None
+            frames = tl["info"].get("frames", [])
+            def at(minute):
+                if len(frames) > minute:
+                    return frames[minute]["participantFrames"].get(str(pid)), (frames[minute]["participantFrames"].get(str(opid)) if opid else None)
+                return None, None
+            m10, o10 = at(10)
+            m14, o14 = at(14)
+            if m10:
+                cs10 = m10["minionsKilled"] + m10["jungleMinionsKilled"]
+                if o10: gd10 = m10["totalGold"] - o10["totalGold"]
+            if m14:
+                cs14 = m14["minionsKilled"] + m14["jungleMinionsKilled"]
+                if o14: gd14 = m14["totalGold"] - o14["totalGold"]
+            for fr in frames:
+                for ev in fr.get("events", []):
+                    if ev.get("type") == "CHAMPION_KILL" and ev.get("victimId") == pid:
+                        t = ev.get("timestamp", 0) // 1000
+                        killer = next((p["championName"] for p in info["participants"] if p["participantId"] == ev.get("killerId")), "Minion/Turm")
+                        assists = [p["championName"] for p in info["participants"] if p["participantId"] in ev.get("assistingParticipantIds", [])]
+                        pos = ev.get("position") or {}
+                        deaths.append({"t": f"{t // 60}:{t % 60:02d}", "by": killer, "with": assists[:3], "x": pos.get("x"), "y": pos.get("y")})
         items.append({
+            "cs10": cs10, "cs14": cs14, "gd10": gd10, "gd14": gd14, "deaths": deaths,
             "id": mid, "ts": info.get("gameEndTimestamp") or info.get("gameCreation"),
             "queue": QUEUES.get(info.get("queueId"), str(info.get("queueId"))),
             "champ": me["championName"], "enemy": opp["championName"] if opp else "",
@@ -134,7 +164,9 @@ def main():
             "cs": me["totalMinionsKilled"] + me["neutralMinionsKilled"], "dur": dur,
             "dmg": me["totalDamageDealtToChampions"], "vision": me["visionScore"],
             "kp": round((me["kills"] + me["assists"]) / team_kills * 100),
-            "gold": me["goldEarned"],
+            "gold": me["goldEarned"], "dmgShare": round(me["totalDamageDealtToChampions"] / team_dmg * 100),
+            "lvl": me.get("champLevel"), "support": next((p["championName"] for p in info["participants"] if p["teamId"] == me["teamId"] and p.get("teamPosition") == "UTILITY"), ""),
+            "enemySupport": next((p["championName"] for p in info["participants"] if p["teamId"] != me["teamId"] and p.get("teamPosition") == "UTILITY"), ""),
         })
     items.sort(key=lambda x: x["ts"] or 0, reverse=True)
 
